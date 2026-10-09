@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Login from "./pages/Login";
+import Login from "../pages/Login";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "../pages/Dashboard";
 import "./App.css";
 
 function App() {
