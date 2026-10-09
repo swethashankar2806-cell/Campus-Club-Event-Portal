@@ -1,0 +1,25 @@
+.event-container { 
+    display: flex; 
+    gap: 20px; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+} 
+.event-card { 
+    width: 280px; 
+    padding: 20px; 
+    border-radius: 12px; 
+    background: white; 
+    box-shadow: 0 3px 10px gray; 
+} 
+.event-card h2 { 
+    margin-bottom: 15px; 
+} 
+.event-card button { 
+    width: 100%; 
+    padding: 10px; 
+    border: none; 
+    border-radius: 6px; 
+    background: #2e7d32; 
+    color: white; 
+    cursor: pointer; 
+}
