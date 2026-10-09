@@ -1,0 +1,168 @@
+.dashboard {
+  flex: 1;
+  min-height: calc(100vh - 70px);
+  padding: 30px 40px;
+  background-color: #f4f7fb;
+}
+
+/* Welcome Section */
+
+.welcome-box {
+  background-color: white;
+  padding: 25px 30px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 3px 10px lightgray;
+  margin-bottom: 30px;
+}
+
+.welcome-box h1 {
+  margin: 0 0 8px;
+  font-size: 38px;
+  color: #183b56;
+}
+
+.welcome-box p {
+  margin: 0;
+  font-size: 17px;
+  color: #607d8b;
+}
+
+
+/* Section Heading */
+
+.section-title {
+  margin: 25px 0 18px;
+  font-size: 25px;
+  color: #183b56;
+}
+
+
+/* Event Cards */
+
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.event-card {
+  background-color: white;
+  padding: 20px;
+  min-height: 190px;
+  display: flex;
+  gap: 18px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px lightgray;
+}
+
+.event-date {
+  width: 65px;
+  height: 70px;
+  min-width: 65px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #2980b9;
+  color: white;
+  border-radius: 8px;
+}
+
+.event-date strong {
+  font-size: 24px;
+}
+
+.event-date span {
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.event-details {
+  flex: 1;
+}
+
+.event-details h3 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  color: #183b56;
+}
+
+.event-details p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #607d8b;
+}
+
+.event-details button {
+  margin-top: 8px;
+  padding: 9px 15px;
+  border: none;
+  border-radius: 6px;
+  background-color: #2980b9;
+  color: white;
+  cursor: pointer;
+}
+
+.event-details button:hover {
+  background-color: #1f618d;
+}
+
+
+/* Quick Access */
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.quick-card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px lightgray;
+}
+
+.quick-card h3 {
+  margin-top: 0;
+  color: #183b56;
+}
+
+.quick-card p {
+  color: #607d8b;
+  font-size: 14px;
+}
+
+
+/* Responsive */
+
+@media (max-width: 1000px) {
+  .event-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quick-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .event-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard {
+    padding: 20px;
+  }
+
+  .welcome-box h1 {
+    font-size: 28px;
+  }
+}
