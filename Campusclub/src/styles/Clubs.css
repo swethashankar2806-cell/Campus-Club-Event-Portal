@@ -16,6 +16,7 @@
 .clubs-container {
   display: flex;
   justify-content: center;
+  background: linear-gradient(#EAF7EE, #FFF0F5);
   gap: 25px;
   flex-wrap: wrap;
 }
