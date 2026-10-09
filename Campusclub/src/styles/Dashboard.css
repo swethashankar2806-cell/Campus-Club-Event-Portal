@@ -1,6 +1,7 @@
 .dashboard {
   flex: 1;
   min-height: calc(100vh - 70px);
+<<<<<<< HEAD
   padding: 30px 40px;
   background-color: #f4f7fb;
 }
@@ -53,10 +54,53 @@
   display: flex;
   gap: 18px;
   border-radius: 12px;
+=======
+  padding: 30px;
+  background-color: #f4f7fb;
+}
+
+.dashboard-header {
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px lightgray;
+}
+
+.dashboard-header h1 {
+  margin: 0 0 8px;
+  color: #183b56;
+}
+
+.dashboard-header p {
+  margin: 0;
+  color: #607d8b;
+}
+
+.section-title {
+  color: #183b56;
+  margin: 25px 0 15px;
+}
+
+.event-cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.event-card {
+  width: 300px;
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  gap: 15px;
+>>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
   box-shadow: 0 3px 10px lightgray;
 }
 
 .event-date {
+<<<<<<< HEAD
   width: 65px;
   height: 70px;
   min-width: 65px;
@@ -73,10 +117,24 @@
 
 .event-date strong {
   font-size: 24px;
+=======
+  width: 60px;
+  height: 65px;
+  background-color: #2980b9;
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  font-weight: bold;
+>>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
 }
 
 .event-date span {
   font-size: 12px;
+<<<<<<< HEAD
   margin-top: 3px;
 }
 
@@ -99,6 +157,28 @@
 .event-details button {
   margin-top: 8px;
   padding: 9px 15px;
+=======
+}
+
+.event-info {
+  flex: 1;
+}
+
+.event-info h3 {
+  margin: 0 0 8px;
+  color: #183b56;
+}
+
+.event-info p {
+  margin: 5px 0;
+  color: #607d8b;
+  font-size: 14px;
+}
+
+.event-info button {
+  margin-top: 10px;
+  padding: 8px 14px;
+>>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
   border: none;
   border-radius: 6px;
   background-color: #2980b9;
@@ -106,6 +186,7 @@
   cursor: pointer;
 }
 
+<<<<<<< HEAD
 .event-details button:hover {
   background-color: #1f618d;
 }
@@ -120,6 +201,20 @@
 }
 
 .quick-card {
+=======
+.event-info button:hover {
+  background-color: #1f618d;
+}
+
+.quick-cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.quick-card {
+  width: 220px;
+>>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
   background-color: white;
   padding: 20px;
   border-radius: 10px;
@@ -127,12 +222,16 @@
 }
 
 .quick-card h3 {
+<<<<<<< HEAD
   margin-top: 0;
+=======
+>>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
   color: #183b56;
 }
 
 .quick-card p {
   color: #607d8b;
+<<<<<<< HEAD
   font-size: 14px;
 }
 
@@ -165,4 +264,6 @@
   .welcome-box h1 {
     font-size: 28px;
   }
+=======
+>>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
 }
