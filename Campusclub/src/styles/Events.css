@@ -1,25 +1,119 @@
-.event-container { 
-    display: flex; 
-    gap: 20px; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-} 
-.event-card { 
-    width: 280px; 
-    padding: 20px; 
-    border-radius: 12px; 
-    background: white; 
-    box-shadow: 0 3px 10px gray; 
-} 
-.event-card h2 { 
-    margin-bottom: 15px; 
-} 
-.event-card button { 
-    width: 100%; 
-    padding: 10px; 
-    border: none; 
-    border-radius: 6px; 
-    background: #2e7d32; 
-    color: white; 
-    cursor: pointer; 
+
+/* Events Page */
+.events-container {
+  width: 100%;
+  max-width: 1350px;
+  margin: 0 auto;
+  padding: 30px 24px;
+  box-sizing: border-box;
+}
+
+/* Page Heading */
+.events-container h1 {
+  text-align: center;
+  font-size: 42px;
+  color: #f5f5f5;
+  margin: 20px 0 35px;
+}
+
+/* Display event cards in a ROW */
+.events-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 24px;
+  width: 100%;
+  align-items: stretch;
+}
+
+/* Individual Event Card */
+.event-card {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: #333333;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Event Title */
+.event-card h2 {
+  font-size: 23px;
+  text-align: center;
+  color: #5145a5;
+  margin: 0 0 20px;
+  overflow-wrap: break-word;
+}
+
+/* Event Details */
+.event-card p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #444444;
+  margin: 8px 0;
+  overflow-wrap: break-word;
+}
+
+/* Register Button */
+.event-card button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: auto;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #25803b;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.event-card button:hover {
+  background: #17652b;
+}
+
+/* Medium Screens */
+@media (max-width: 900px) {
+  .events-container {
+    padding: 24px 16px;
+  }
+
+  .events-list {
+    gap: 16px;
+  }
+
+  .event-card {
+    padding: 16px;
+  }
+
+  .event-card h2 {
+    font-size: 19px;
+  }
+}
+
+/* Small Screens */
+@media (max-width: 600px) {
+  .events-container h1 {
+    font-size: 30px;
+  }
+
+  .events-list {
+    flex-wrap: wrap;
+  }
+
+  .event-card {
+    flex: 1 1 100%;
+  }
 }

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import "../styles/Dashboard.css";
 function Dashboard() {
   return (
@@ -130,7 +129,6 @@ function Dashboard() {
 }
 
 export default Dashboard;
-=======
 <div className="event-cards">
 
   <div className="event-card">
@@ -179,4 +177,3 @@ export default Dashboard;
   </div>
 
 </div>
->>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1

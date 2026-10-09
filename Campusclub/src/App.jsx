@@ -1,34 +1,29 @@
-import { useState } from "react";
-import Login from "../pages/Login";
-import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
-import Dashboard from "../pages/Dashboard";
-import "./App.css";
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Layout from './components/Layout.jsx';
+
+import Dashboard from './pages/Dashboard.jsx';
+import Clubs from './pages/Clubs.jsx';
+import Events from './pages/Events.jsx';
+import MyEvents from './pages/MyEvents.jsx';
+import Profile from './pages/Profile.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+return ( <Routes>
+<Route path="/login" element={<Login />} />
+<Route path="/register" element={<Register />} />
+  <Route element={<Layout />}>
+    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/clubs" element={<Clubs />} />
+    <Route path="/events" element={<Events />} />
+    <Route path="/my-events" element={<MyEvents />} />
+    <Route path="/profile" element={<Profile />} />
+  </Route>
+</Routes>
 
-  if (!isLoggedIn) {
-    return (
-      <Login onLogin={() => setIsLoggedIn(true)} />
-    );
-  }
-
-  return (
-    <div className="app">
-
-      <Navbar />
-
-      <div className="layout">
-
-        <Sidebar />
-
-        <Dashboard />
-
-      </div>
-
-    </div>
-  );
+);
 }
 
 export default App;
