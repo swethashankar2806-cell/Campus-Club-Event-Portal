@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-import Layout from "./components/Layout";
-import Dashboard from "./pages/Dashboard";
-
-function App() {
-  return (
-    <Layout>
-      <Dashboard />
-    </Layout>
-=======
 import { useState } from "react";
 import Login from "../pages/Login";
 import Navbar from "./components/Navbar";
@@ -38,7 +28,6 @@ function App() {
       </div>
 
     </div>
->>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
   );
 }
 
