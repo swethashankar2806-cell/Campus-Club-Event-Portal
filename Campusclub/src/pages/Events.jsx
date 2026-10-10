@@ -1,7 +1,6 @@
 
 import EventCard from '../components/EventCard.jsx';
 import '../styles/Events.css';
-
 function Events() {
   const events = [
     {
@@ -32,15 +31,12 @@ function Events() {
       description: 'Indoor and outdoor sports competitions.'
     }
   ];
-
   const handleRegister = (eventTitle) => {
     alert(`Successfully registered for ${eventTitle}!`);
   };
-
   return (
     <div className="events-container">
       <h1>Upcoming Events</h1>
-
       <div className="events-list">
         {events.map((event) => (
           <EventCard
@@ -53,5 +49,4 @@ function Events() {
     </div>
   );
 }
-
 export default Events;

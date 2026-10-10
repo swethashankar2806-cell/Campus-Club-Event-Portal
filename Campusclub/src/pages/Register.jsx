@@ -1,14 +1,11 @@
 import { useState } from 'react';
-
 function Register() {
 const [name, setName] = useState('');
 const [email, setEmail] = useState('');
-
 const handleRegister = (e) => {
 e.preventDefault();
 alert(`Registration successful! Welcome, ${name}`);
 };
-
 return ( <div className="register-container"> <h1>Student Registration</h1>
   <form onSubmit={handleRegister}>
     <input
@@ -18,7 +15,6 @@ return ( <div className="register-container"> <h1>Student Registration</h1>
       onChange={(e) => setName(e.target.value)}
       required
     />
-
     <input
       type="email"
       placeholder="Enter your email"
@@ -26,12 +22,10 @@ return ( <div className="register-container"> <h1>Student Registration</h1>
       onChange={(e) => setEmail(e.target.value)}
       required
     />
-
     <button type="submit">Register</button>
   </form>
 </div>
 
 );
 }
-
 export default Register;

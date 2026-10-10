@@ -1,5 +1,3 @@
-
-/* Navbar Container */
 .navbar {
   width: 100%;
   padding: 18px 30px;
@@ -13,8 +11,6 @@
   gap: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
-
-/* Website Title */
 .navbar h2 {
   margin: 0;
   font-size: 28px;
@@ -22,8 +18,6 @@
   color: #ffffff;
   letter-spacing: 0.5px;
 }
-
-/* Navigation Links */
 .nav-links {
   display: flex;
   flex-direction: row;
@@ -33,8 +27,6 @@
   gap: 28px;
   margin: 4px 0;
 }
-
-/* Individual Links */
 .nav-links a {
   color: #c4b5fd;
   text-decoration: none;
@@ -43,38 +35,28 @@
   padding: 8px 0;
   transition: color 0.3s ease;
 }
-
-/* Hover Effect */
 .nav-links a:hover {
   color: #ffffff;
 }
-
-/* Portal Subtitle */
 .navbar p {
   margin: 0;
   color: #b0bec5;
   font-size: 16px;
   letter-spacing: 0.5px;
 }
-
-/* Mobile Responsive */
 @media (max-width: 600px) {
   .navbar {
     padding: 16px;
   }
-
   .navbar h2 {
     font-size: 24px;
   }
-
   .nav-links {
     gap: 12px 18px;
   }
-
   .nav-links a {
     font-size: 14px;
   }
-
   .navbar p {
     font-size: 14px;
     text-align: center;

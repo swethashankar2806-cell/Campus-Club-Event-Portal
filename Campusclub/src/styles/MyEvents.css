@@ -1,0 +1,59 @@
+.my-events {
+min-height: 100vh;
+padding: 30px;
+background-color: #f4f6fb;
+font-family: Arial, sans-serif;
+}
+.my-events h1 {
+text-align: center;
+color: #222;
+margin-bottom: 30px;
+font-size: 32px;
+}
+.my-events > div {
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 20px;
+max-width: 600px;
+margin: 15px auto;
+padding: 20px;
+background-color: white;
+border-radius: 10px;
+box-shadow: 0 3px 10px #00000015;
+border-left: 4px solid #5546e8;
+}
+.my-events span {
+color: #333;
+font-size: 17px;
+font-weight: bold;
+}
+.my-events button {
+background-color: #5546e8;
+color: white;
+padding: 10px 15px;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+white-space: nowrap;
+}
+.my-events button:hover {
+background-color: #392bbd;
+}
+.my-events > p {
+text-align: center;
+color: #555;
+margin-top: 30px;
+}
+@media (max-width: 500px) {
+.my-events {
+padding: 20px 12px;
+}
+.my-events > div {
+flex-direction: column;
+align-items: flex-start;
+}
+.my-events button {
+width: 100%;
+}
+}

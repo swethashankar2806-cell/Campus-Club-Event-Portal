@@ -1,5 +1,4 @@
 import "../styles/Clubs.css";
-
 function Clubs() {
   const clubs = [
     {
@@ -23,27 +22,21 @@ function Clubs() {
       members: 40,
     },
   ];
-
   return (
     <div className="clubs-page">
       <h1>College Clubs</h1>
       <p className="club-subtitle">
         Explore clubs and join activities that interest you.
       </p>
-
       <div className="clubs-container">
         {clubs.map((club) => (
           <div className="club-card" key={club.name}>
             <div className="club-icon">🎓</div>
-
             <h2>{club.name}</h2>
-
             <p>{club.description}</p>
-
             <p className="members">
               👥 {club.members} Members
             </p>
-
             <button>Join Club</button>
           </div>
         ))}
@@ -51,5 +44,4 @@ function Clubs() {
     </div>
   );
 }
-
 export default Clubs;

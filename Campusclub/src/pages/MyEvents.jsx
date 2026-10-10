@@ -1,15 +1,13 @@
 import { useState } from 'react';
-
+import "../styles/MyEvents.css";
 function MyEvents() {
 const [events, setEvents] = useState([
 'Tech Fest 2026',
 'Cultural Day'
 ]);
-
 const removeEvent = (eventName) => {
 setEvents(events.filter((event) => event !== eventName));
 };
-
 return ( <div className="my-events"> <h1>My Registered Events</h1>
   {events.length === 0 ? (
     <p>You have not registered for any events.</p>
@@ -24,8 +22,6 @@ return ( <div className="my-events"> <h1>My Registered Events</h1>
     ))
   )}
 </div>
-
 );
 }
-
 export default MyEvents;
