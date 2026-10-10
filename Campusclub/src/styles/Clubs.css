@@ -1,26 +1,31 @@
 .clubs-page {
   padding: 30px;
+  background: linear-gradient(to bottom, #EAF7EE, #FFF0F5);
+  color: black;
   text-align: center;
 }
 .clubs-page h1 {
   font-size: 32px;
+  color: black;
   margin-bottom: 10px;
 }
 .club-subtitle {
-  color: #666;
+  color: #0f0f0f;
   margin-bottom: 30px;
 }
 .clubs-container {
   display: flex;
   justify-content: center;
   background: linear-gradient(#EAF7EE, #FFF0F5);
+  color: rgba(249, 237, 237, 0.941);
   gap: 25px;
   flex-wrap: wrap;
 }
 .club-card {
   width: 250px;
   padding: 25px;
-  background: white;
+  background: #FFF0F5;
+  color:#0f0f0f;
   border-radius: 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   text-align: center;
@@ -30,9 +35,10 @@
 }
 .club-card h2 {
   margin: 15px 0;
+  color: #0f0f0f;
 }
 .club-card p {
-  color: #555;
+  color: #0f0f0f;
   line-height: 1.5;
 }
 .members {
@@ -43,9 +49,28 @@
   border: none;
   border-radius: 8px;
   background: #2563eb;
-  color: white;
+  color: rgb(22, 21, 21);
   cursor: pointer;
 }
 .club-card button:hover {
   background: #1d4ed8;
+}
+
+/* College Clubs heading section */
+.clubs-header {
+  background-color: #F3EEFF;
+  padding: 40px 20px;
+  text-align: center;
+  border-radius: 15px;
+}
+
+/* College Clubs title */
+.clubs-header h1 {
+  color: #5145A5;
+  margin-bottom: 10px;
+}
+
+/* Subtitle */
+.clubs-header p {
+  color: #666666;
 }
