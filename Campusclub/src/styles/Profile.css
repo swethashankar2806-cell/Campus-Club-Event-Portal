@@ -1,29 +1,65 @@
-.profile-container {
-text-align: center;
-font-family: Arial, sans-serif;
-padding: 30px;
-background-color: #f2f2f2;
-min-height: 100vh;
+.profile-page {
+  min-height: 100vh;
+  padding: 35px 20px;
+  text-align: center;
+  background: linear-gradient(135deg, #f5f0ff, #e6f7ff);
 }
+
+.profile-page h1 {
+  color: #29234d;
+  margin-bottom: 30px;
+}
+
 .profile-card {
-background-color: white;
-width: 300px;
-margin: 20px auto;
-padding: 20px;
-border-radius: 10px;
-box-shadow: 0 2px 8px #ccc;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 30px 25px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(54, 42, 100, 0.15);
 }
+
+.profile-avatar {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7857ff, #e879c5);
+  color: white;
+  font-size: 36px;
+  font-weight: bold;
+  border: 5px solid #eee8ff;
+  box-shadow: 0 5px 15px rgba(120, 87, 255, 0.25);
+}
+
 .profile-card h2 {
-color: #333;
+  margin: 10px 0 18px;
+  color: #29234d;
 }
+
 .profile-card p {
-text-align: left;
+  text-align: left;
+  color: #77758b;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
 }
-button {
-background-color: blue;
-color: white;
-padding: 10px 20px;
-border: none;
-border-radius: 5px;
-cursor: pointer;
+
+.profile-button {
+  margin-top: 18px;
+  padding: 12px 25px;
+  background: #6546ed;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.profile-button:hover {
+  background: #4930bd;
+  transform: translateY(-2px);
 }

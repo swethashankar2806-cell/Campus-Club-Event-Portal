@@ -1,3 +1,4 @@
+
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
@@ -16,7 +17,8 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'campus_club_db',
   waitForConnections: true,
-  connectionLimit: 10
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
 // Home route
@@ -28,31 +30,63 @@ app.get('/', (req, res) => {
 app.get('/api/events', async (req, res) => {
   try {
     const [events] = await pool.query(
-      'SELECT * FROM events ORDER BY event_date ASC'
+      `SELECT * FROM events ORDER BY event_date ASC`
     );
+
     res.json(events);
   } catch (error) {
     console.error('Fetch events error:', error.message);
-    res.status(500).json({ message: 'Unable to fetch events' });
+    res.status(500).json({ message: 'Unable to fetch events.' });
   }
 });
 
 // Register for an event
 app.post('/api/registrations', async (req, res) => {
   try {
-    const { event_id, student_name, student_email } = req.body;
+    const {
+      event_id,
+      student_name,
+      student_email,
+      register_number,
+      department,
+      year_of_student,
+      phone
+    } = req.body;
 
-    if (!event_id || !student_name || !student_email) {
+    if (
+      !event_id ||
+      !student_name?.trim() ||
+      !student_email?.trim() ||
+      !register_number?.trim() ||
+      !department ||
+      !year_of_student ||
+      !phone
+    ) {
       return res.status(400).json({
-        message: 'Event ID, student name and email are required'
+        message: 'Please fill in all required fields.'
+      });
+    }
+
+    if (!/^\d{10}$/.test(String(phone))) {
+      return res.status(400).json({
+        message: 'Phone number must contain exactly 10 digits.'
       });
     }
 
     const [result] = await pool.query(
       `INSERT INTO registrations
-       (event_id, student_name, student_email)
-       VALUES (?, ?, ?)`,
-      [event_id, student_name, student_email]
+       (event_id, student_name, student_email, register_number,
+        department, year_of_student, phone)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        Number(event_id),
+        student_name.trim(),
+        student_email.trim(),
+        register_number.trim(),
+        department,
+        year_of_student,
+        String(phone)
+      ]
     );
 
     res.status(201).json({
@@ -64,41 +98,65 @@ app.post('/api/registrations', async (req, res) => {
 
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({
-        message: 'You have already registered for this event'
+        message: 'You have already registered for this event.'
+      });
+    }
+
+    if (
+      error.code === 'ER_NO_REFERENCED_ROW_2' ||
+      error.code === 'ER_NO_REFERENCED_ROW'
+    ) {
+      return res.status(400).json({
+        message: 'The selected event does not exist.'
       });
     }
 
     res.status(500).json({
-      message: 'Event registration failed'
+      message: 'Registration failed. Please check the backend.'
     });
   }
 });
 
-// Get registrations for a student
+// Get My Events using the student's registration email
 app.get('/api/registrations', async (req, res) => {
   try {
-    const { email } = req.query;
+    const email = req.query.email?.trim();
 
     if (!email) {
       return res.status(400).json({
-        message: 'Please provide a student email'
+        message: 'Please provide the student email.'
       });
     }
 
-    const [registrations] = await pool.query(
-      `SELECT r.*, e.title, e.event_date, e.event_time, e.venue
+    const [rows] = await pool.query(
+      `SELECT
+          r.id,
+          r.event_id,
+          r.student_name,
+          r.student_email,
+          r.register_number,
+          r.department,
+          r.year_of_student,
+          r.phone,
+          r.registered_at,
+          e.title,
+          e.event_date,
+          e.event_time,
+          e.venue,
+          e.organizer,
+          e.description
        FROM registrations r
-       JOIN events e ON r.event_id = e.id
-       WHERE r.student_email = ?
+       INNER JOIN events e ON e.id = r.event_id
+       WHERE LOWER(TRIM(r.student_email)) = LOWER(?)
        ORDER BY e.event_date ASC`,
       [email]
     );
 
-    res.json(registrations);
+    res.json(rows);
   } catch (error) {
-    console.error('Fetch registrations error:', error.message);
+    console.error('Fetch My Events error:', error.message);
     res.status(500).json({
-      message: 'Unable to fetch registrations'
+      message: 'Unable to fetch registered events.'
     });
   }
 });
@@ -113,9 +171,7 @@ app.get('/api/clubs', async (req, res) => {
     res.json(clubs);
   } catch (error) {
     console.error('Fetch clubs error:', error.message);
-    res.status(500).json({
-      message: 'Unable to fetch clubs'
-    });
+    res.status(500).json({ message: 'Unable to fetch clubs.' });
   }
 });
 
@@ -127,27 +183,27 @@ app.post('/api/clubs/join', async (req, res) => {
     student_email,
     register_number,
     department,
-    year_of_student,
+    year_of_study,
     phone
   } = req.body;
 
   if (
     !club_id ||
-    !student_name ||
-    !student_email ||
-    !register_number ||
+    !student_name?.trim() ||
+    !student_email?.trim() ||
+    !register_number?.trim() ||
     !department ||
-    !year_of_student ||
+    !year_of_study ||
     !phone
   ) {
     return res.status(400).json({
-      message: 'Please fill in all required fields'
+      message: 'Please fill in all required club registration fields.'
     });
   }
 
   if (!/^\d{10}$/.test(String(phone))) {
     return res.status(400).json({
-      message: 'Phone number must contain exactly 10 digits'
+      message: 'Phone number must contain exactly 10 digits.'
     });
   }
 
@@ -157,41 +213,32 @@ app.post('/api/clubs/join', async (req, res) => {
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
-    // Save student club membership
     const [result] = await connection.query(
       `INSERT INTO club_members
-       (
-         club_id,
-         student_name,
-         student_email,
-         register_number,
-         department,
-         year_of_student,
-         phone
-       )
+       (club_id, student_name, student_email, register_number,
+        department, year_of_study, phone)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
-        club_id,
-        student_name,
-        student_email,
-        register_number,
+        Number(club_id),
+        student_name.trim(),
+        student_email.trim(),
+        register_number.trim(),
         department,
-        year_of_student,
-        phone
+        year_of_study,
+        String(phone)
       ]
     );
 
-    // Update club member count
     await connection.query(
       'UPDATE clubs SET members = members + 1 WHERE id = ?',
-      [club_id]
+      [Number(club_id)]
     );
 
     await connection.commit();
 
     res.status(201).json({
       message: 'Successfully joined the club!',
-      membership_id: result.insertId
+      id: result.insertId
     });
   } catch (error) {
     if (connection) {
@@ -202,19 +249,21 @@ app.post('/api/clubs/join', async (req, res) => {
 
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({
-        message: 'You have already joined this club with this email'
+        message: 'You have already joined this club with this email.'
       });
     }
 
-    if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+    if (
+      error.code === 'ER_NO_REFERENCED_ROW_2' ||
+      error.code === 'ER_NO_REFERENCED_ROW'
+    ) {
       return res.status(400).json({
-        message: 'The selected club does not exist'
+        message: 'The selected club does not exist.'
       });
     }
 
     res.status(500).json({
-      message: 'Club registration failed',
-      error: error.message
+      message: 'Club registration failed. Please check the database.'
     });
   } finally {
     if (connection) {
@@ -229,6 +278,7 @@ const PORT = Number(process.env.PORT || 5000);
 async function startServer() {
   try {
     await pool.query('SELECT 1');
+
     console.log('MySQL connected successfully!');
 
     app.listen(PORT, () => {
@@ -236,6 +286,7 @@ async function startServer() {
     });
   } catch (error) {
     console.error('MySQL connection failed:', error.message);
+    process.exit(1);
   }
 }
 

@@ -1,64 +1,113 @@
 .navbar {
   width: 100%;
-  padding: 18px 30px;
+  min-height: 85px;
+  padding: 16px 28px;
   box-sizing: border-box;
   background: #20212b;
-  color: #ffffff;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-.navbar h2 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.5px;
-}
-.nav-links {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
   flex-wrap: wrap;
-  gap: 28px;
-  margin: 4px 0;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
 }
-.nav-links a {
-  color: #c4b5fd;
+
+.navbar-brand {
+  color: white;
+  font-size: 25px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.navbar-links a {
+  color: #c7b8ff;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  padding: 8px 0;
-  transition: color 0.3s ease;
+  transition: color 0.3s;
 }
-.nav-links a:hover {
-  color: #ffffff;
+
+.navbar-links a:hover {
+  color: white;
 }
-.navbar p {
-  margin: 0;
-  color: #b0bec5;
-  font-size: 16px;
-  letter-spacing: 0.5px;
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-@media (max-width: 600px) {
+
+.navbar-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.navbar-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7857ff, #e879c5);
+  color: white;
+  font-weight: bold;
+}
+
+.navbar-logout {
+  border: none;
+  border-radius: 7px;
+  padding: 10px 15px;
+  background: #e74c3c;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.navbar-logout:hover {
+  background: #c0392b;
+}
+
+@media (max-width: 850px) {
+  .navbar {
+    justify-content: center;
+  }
+
+  .navbar-links {
+    order: 3;
+    width: 100%;
+  }
+}
+
+@media (max-width: 500px) {
   .navbar {
     padding: 16px;
   }
-  .navbar h2 {
-    font-size: 24px;
+
+  .navbar-links {
+    gap: 14px;
   }
-  .nav-links {
-    gap: 12px 18px;
-  }
-  .nav-links a {
+
+  .navbar-links a {
     font-size: 14px;
   }
-  .navbar p {
-    font-size: 14px;
-    text-align: center;
+
+  .navbar-user {
+    gap: 8px;
   }
 }

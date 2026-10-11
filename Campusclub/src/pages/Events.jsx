@@ -1,106 +1,136 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Events.css';
 
 function Events() {
+  const navigate = useNavigate();
+
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Fetch events from the backend
   useEffect(() => {
     axios
       .get('http://localhost:5000/api/events')
       .then((response) => {
         setEvents(response.data);
-        setLoading(false);
+        setError('');
       })
-      .catch((error) => {
-        console.error(error);
+      .catch((err) => {
+        console.error('Error fetching events:', err);
         setError('Unable to load events. Please check your backend.');
+      })
+      .finally(() => {
         setLoading(false);
       });
   }, []);
 
-  const handleRegister = async (event) => {
-    const student_name = prompt('Enter your name:');
-    if (!student_name || !student_name.trim()) return;
+  // Format MySQL DATE values safely
+  const formatDate = (value) => {
+    if (!value) return 'Date not available';
 
-    const student_email = prompt('Enter your email:');
-    if (!student_email || !student_email.trim()) return;
+    const parts = String(value).slice(0, 10).split('-');
 
-    try {
-      const response = await axios.post(
-        'http://localhost:5000/api/registrations',
-        {
-          event_id: event.id,
-          student_name: student_name.trim(),
-          student_email: student_email.trim()
-        }
-      );
-
-      alert(response.data.message);
-    } catch (error) {
-      alert(
-        error.response?.data?.message ||
-        'Registration failed. Please try again.'
-      );
+    if (
+      parts.length !== 3 ||
+      !parts.every((part) => /^\d+$/.test(part))
+    ) {
+      return 'Date not available';
     }
+
+    const [year, month, day] = parts.map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    if (Number.isNaN(date.getTime())) {
+      return 'Date not available';
+    }
+
+    return date.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC'
+    });
   };
 
-  if (loading) {
-    return <p className="events-message">Loading events...</p>;
-  }
-
-  if (error) {
-    return <p className="events-error">{error}</p>;
-  }
+  // Open registration on a separate page
+  const handleRegister = (event) => {
+    navigate('/register-event', {
+      state: { event }
+    });
+  };
 
   return (
-    <div className="events-container">
+    <main className="events-page">
       <h1>Upcoming Events</h1>
+
       <p className="events-subtitle">
         Discover campus activities and register for your favourite events.
       </p>
 
-      {events.length === 0 ? (
-        <p className="events-message">No events available.</p>
-      ) : (
-        <div className="events-list">
+      {loading && (
+        <p className="dashboard-message">Loading events...</p>
+      )}
+
+      {error && (
+        <p className="events-error">{error}</p>
+      )}
+
+      {!loading && !error && events.length === 0 && (
+        <p className="dashboard-message">
+          No events available at the moment.
+        </p>
+      )}
+
+      {!loading && !error && events.length > 0 && (
+        <div className="event-cards">
           {events.map((event) => (
-            <div className="event-card" key={event.id}>
-              <div className="event-card-top">
-                <span className="event-tag">CAMPUS EVENT</span>
-                <span className="event-icon">🎉</span>
-              </div>
+            <article className="event-card" key={event.id}>
+              <p className="event-category">
+                CAMPUS EVENT 🎉
+              </p>
 
               <h2>{event.title}</h2>
-              <p className="event-description">{event.description}</p>
 
-              <div className="event-details">
-                <p>📅 <strong>Date:</strong>{' '}
-                  {new Date(event.event_date + 'T00:00:00')
-                    .toLocaleDateString('en-GB', {
-                      day: '2-digit',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                </p>
-                <p>🕒 <strong>Time:</strong> {event.event_time}</p>
-                <p>📍 <strong>Venue:</strong> {event.venue}</p>
-                <p>👥 <strong>Organizer:</strong> {event.organizer}</p>
-              </div>
+              <p className="event-description">
+                {event.description ||
+                  'Join us for this exciting campus event.'}
+              </p>
+
+              <p>
+                🗓️ <strong>Date:</strong>{' '}
+                {formatDate(event.event_date)}
+              </p>
+
+              <p>
+                🕒 <strong>Time:</strong>{' '}
+                {event.event_time || 'To be announced'}
+              </p>
+
+              <p>
+                📍 <strong>Venue:</strong>{' '}
+                {event.venue || 'To be announced'}
+              </p>
+
+              <p>
+                👥 <strong>Organizer:</strong>{' '}
+                {event.organizer || 'Campus Club'}
+              </p>
 
               <button
+                type="button"
                 className="register-btn"
                 onClick={() => handleRegister(event)}
               >
                 Register Now →
               </button>
-            </div>
+            </article>
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }
 
