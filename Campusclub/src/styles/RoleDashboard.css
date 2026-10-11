@@ -1,0 +1,29 @@
+.role-dashboard {
+  min-height: 80vh;
+  padding: 40px;
+  background: #f3f0ff;
+  color: #29234d;
+  text-align: center;
+}
+
+.role-dashboard h1 {
+  margin-bottom: 15px;
+}
+
+.role-dashboard nav {
+  margin-top: 25px;
+}
+
+.role-dashboard a {
+  display: inline-block;
+  margin: 8px;
+  padding: 12px 20px;
+  background: #6546ed;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.role-dashboard a:hover {
+  background: #4930bd;
+}

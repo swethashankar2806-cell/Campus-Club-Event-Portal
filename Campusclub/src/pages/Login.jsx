@@ -6,29 +6,33 @@ function Login() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('student');
+
   const navigate = useNavigate();
 
   const handleLogin = (e) => {
     e.preventDefault();
 
-    if (!username.trim() || !email.trim() || !password) {
-      alert('Please fill in all fields.');
-      return;
-    }
-
-    // Save student details for the Profile page
+    // Save the logged-in user's details
     localStorage.setItem('student_name', username.trim());
     localStorage.setItem('student_email', email.trim());
+    localStorage.setItem('user_role', role);
 
-    // Navigate to the Dashboard
-    navigate('/dashboard');
+    // Open the correct dashboard
+    if (role === 'student') {
+      navigate('/dashboard');
+    } else if (role === 'coordinator') {
+      navigate('/coordinator');
+    } else {
+      navigate('/admin');
+    }
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
         <img
-          src="/src/assets/logo.jpg"
+          src="/logo.jpeg"
           alt="Campus Club Logo"
           className="login-logo"
         />
@@ -65,6 +69,17 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+
+          <label>Select Role</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            required
+          >
+            <option value="student">Student</option>
+            <option value="coordinator">Coordinator</option>
+            <option value="admin">Admin</option>
+          </select>
 
           <button type="submit">Login</button>
         </form>
