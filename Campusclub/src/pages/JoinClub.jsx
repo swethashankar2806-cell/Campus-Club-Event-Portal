@@ -6,58 +6,67 @@ import '../styles/JoinClub.css';
 function JoinClub() {
   const location = useLocation();
   const navigate = useNavigate();
-  const club = location.state?.club;
+
+  const club = location.state?.club || {
+    id: '',
+    name: 'Campus Club',
+  };
 
   const [formData, setFormData] = useState({
     student_name: '',
     register_number: '',
     department: '',
-    year_of_student: '',
+    year_of_study: '',
     student_email: '',
-    phone: ''
+    phone: '',
   });
 
   const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((previousData) => ({
-      ...previousData,
-      [name]: value
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
     }));
+
+    setMessage('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
 
-    if (!club?.id) {
-      setMessage('Club information is missing. Please select a club again.');
-      return;
-    }
-
-    const allFieldsFilled = Object.values(formData).every(
-      (value) => String(value).trim() !== ''
+    // Validate all required fields
+    const allFilled = Object.values(formData).every(
+      (value) => value.trim() !== ''
     );
 
-    if (!allFieldsFilled) {
-      setMessage('Please fill in all required fields.');
-      return;
-    }
-
-    if (!/^\d{10}$/.test(formData.phone)) {
-      setMessage('Please enter a valid 10-digit phone number.');
+    if (!allFilled) {
+      setMessage('Please fill in all required club registration fields.');
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.student_email)) {
-      setMessage('Please enter a valid college email address.');
+      setMessage('Please enter a valid email address.');
       return;
     }
 
-    setIsSubmitting(true);
+    if (!/^\d{10}$/.test(formData.phone.trim())) {
+      setMessage('Please enter a valid 10-digit phone number.');
+      return;
+    }
+
+    if (!club.id) {
+      setMessage(
+        'Club information is missing. Please return to Clubs and select a club.'
+      );
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const response = await axios.post(
@@ -66,11 +75,24 @@ function JoinClub() {
           club_id: club.id,
           student_name: formData.student_name.trim(),
           register_number: formData.register_number.trim(),
-          department: formData.department,
-          year_of_student: formData.year_of_student,
+          department: formData.department.trim(),
+          year_of_study: formData.year_of_study,
           student_email: formData.student_email.trim(),
-          phone: formData.phone.trim()
+          phone: formData.phone.trim(),
         }
+      );
+
+      localStorage.setItem(
+        'student_name',
+        formData.student_name.trim()
+      );
+      localStorage.setItem(
+        'student_email',
+        formData.student_email.trim()
+      );
+      localStorage.setItem(
+        'student_department',
+        formData.department.trim()
       );
 
       setMessage(
@@ -79,7 +101,7 @@ function JoinClub() {
 
       setTimeout(() => {
         navigate('/clubs');
-      }, 1200);
+      }, 1500);
     } catch (error) {
       console.error(
         'Club registration error:',
@@ -88,141 +110,132 @@ function JoinClub() {
 
       setMessage(
         error.response?.data?.message ||
-        'Registration failed. Please check your backend and try again.'
+          'Registration failed. Please check your backend and try again.'
       );
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="join-club-page">
       <div className="join-club-card">
-        <div className="join-club-icon">🎓</div>
-
-        <h1>Club Registration</h1>
-
+        <h1>Join {club.name}</h1>
         <p className="join-club-subtitle">
-          Join <strong>{club?.name || 'your favourite club'}</strong> by
-          completing your details.
+          Enter your student details to register for this club.
         </p>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="student_name">Full Name *</label>
-            <input
-              id="student_name"
-              type="text"
-              name="student_name"
-              placeholder="Enter your full name"
-              value={formData.student_name}
-              onChange={handleChange}
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} noValidate>
+          <label htmlFor="student_name">Full Name *</label>
+          <input
+            id="student_name"
+            name="student_name"
+            type="text"
+            placeholder="Enter your full name"
+            value={formData.student_name}
+            onChange={handleChange}
+            required
+          />
 
-          <div className="form-group">
-            <label htmlFor="register_number">Register Number *</label>
-            <input
-              id="register_number"
-              type="text"
-              name="register_number"
-              placeholder="Enter your register number"
-              value={formData.register_number}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <label htmlFor="register_number">Register Number *</label>
+          <input
+            id="register_number"
+            name="register_number"
+            type="text"
+            placeholder="Enter your register number"
+            value={formData.register_number}
+            onChange={handleChange}
+            required
+          />
 
-          <div className="form-group">
-            <label htmlFor="department">Department *</label>
-            <select
-              id="department"
-              name="department"
-              value={formData.department}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select Department</option>
-              <option value="IT">Information Technology (IT)</option>
-              <option value="CSE">Computer Science (CSE)</option>
-              <option value="AIDS">AI & Data Science (AIDS)</option>
-              <option value="AIML">AI & Machine Learning (AIML)</option>
-              <option value="ECE">Electronics (ECE)</option>
-              <option value="EEE">Electrical (EEE)</option>
-              <option value="MECH">Mechanical (MECH)</option>
-              <option value="CIVIL">Civil (CIVIL)</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="year_of_student">Year of Study *</label>
-            <select
-              id="year_of_student"
-              name="year_of_student"
-              value={formData.year_of_student}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Select Year</option>
-              <option value="1st Year">1st Year</option>
-              <option value="2nd Year">2nd Year</option>
-              <option value="3rd Year">3rd Year</option>
-              <option value="4th Year">4th Year</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="student_email">College Email *</label>
-            <input
-              id="student_email"
-              type="email"
-              name="student_email"
-              placeholder="Enter your email"
-              value={formData.student_email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="phone">Phone Number *</label>
-            <input
-              id="phone"
-              type="tel"
-              name="phone"
-              placeholder="Enter 10-digit phone number"
-              value={formData.phone}
-              onChange={handleChange}
-              maxLength={10}
-              pattern="[0-9]{10}"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="join-submit-btn"
-            disabled={isSubmitting}
+          <label htmlFor="department">Department *</label>
+          <select
+            id="department"
+            name="department"
+            value={formData.department}
+            onChange={handleChange}
+            required
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Registration'}
+            <option value="">Select Department</option>
+            <option value="Information Technology">
+              Information Technology
+            </option>
+            <option value="Computer Science Engineering">
+              Computer Science Engineering
+            </option>
+            <option value="Artificial Intelligence and Data Science">
+              Artificial Intelligence and Data Science
+            </option>
+            <option value="Electronics and Communication Engineering">
+              Electronics and Communication Engineering
+            </option>
+            <option value="Electrical and Electronics Engineering">
+              Electrical and Electronics Engineering
+            </option>
+            <option value="Mechanical Engineering">
+              Mechanical Engineering
+            </option>
+            <option value="Civil Engineering">Civil Engineering</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <label htmlFor="year_of_study">Year of Study *</label>
+          <select
+            id="year_of_study"
+            name="year_of_study"
+            value={formData.year_of_study}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Year</option>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+          </select>
+
+          <label htmlFor="student_email">College Email *</label>
+          <input
+            id="student_email"
+            name="student_email"
+            type="email"
+            placeholder="Enter your college email"
+            value={formData.student_email}
+            onChange={handleChange}
+            required
+          />
+
+          <label htmlFor="phone">Phone Number *</label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            placeholder="Enter 10-digit phone number"
+            value={formData.phone}
+            onChange={handleChange}
+            maxLength={10}
+            inputMode="numeric"
+            required
+          />
+
+          <button type="submit" disabled={loading}>
+            {loading ? 'Submitting...' : 'Submit Registration'}
           </button>
 
           {message && (
-            <p className="join-message" role="status">
+            <p className="join-club-message" role="status">
               {message}
             </p>
           )}
-
-          <button
-            type="button"
-            className="back-btn"
-            onClick={() => navigate('/clubs')}
-          >
-            ← Back to Clubs
-          </button>
         </form>
+
+        <button
+          type="button"
+          className="back-to-clubs"
+          onClick={() => navigate('/clubs')}
+        >
+          ← Back to Clubs
+        </button>
       </div>
     </div>
   );

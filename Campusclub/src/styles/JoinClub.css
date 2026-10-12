@@ -1,109 +1,128 @@
-
 .join-club-page {
-  min-height: 75vh;
+  min-height: 100vh;
   padding: 40px 20px;
-  background: linear-gradient(135deg, #f0fff5, #fff0f7);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #f3fff8, #fff0f7);
   font-family: Arial, sans-serif;
 }
 
 .join-club-card {
-  position: relative;
   width: 100%;
-  max-width: 460px;
+  max-width: 575px;
+  padding: 35px 45px;
   box-sizing: border-box;
-  padding: 35px;
-  border-radius: 22px;
-  background: white;
-  box-shadow: 0 12px 35px rgba(65, 42, 110, 0.13);
-}
-
-.back-btn {
-  border: none;
-  background: transparent;
-  color: #7047d7;
-  font-size: 14px;
-  cursor: pointer;
-  margin-bottom: 20px;
-}
-
-.join-club-icon {
-  text-align: center;
-  font-size: 44px;
+  background: #ffffff;
+  border-radius: 25px;
+  box-shadow: 0 12px 35px rgba(75, 45, 100, 0.15);
 }
 
 .join-club-card h1 {
+  margin: 0 0 10px;
+  color: #5133a5;
   text-align: center;
-  color: #49306c;
-  font-size: 26px;
-  margin: 12px 0;
+  font-size: 30px;
 }
 
 .join-club-subtitle {
-  text-align: center;
-  color: #81758d;
   margin-bottom: 28px;
+  color: #777087;
+  text-align: center;
+  line-height: 1.6;
 }
 
 .join-club-card form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
 .join-club-card label {
-  font-size: 14px;
-  font-weight: bold;
-  color: #443653;
+  margin: 12px 0 8px;
+  color: #352b51;
+  font-weight: 600;
 }
 
-.join-club-card input {
-  box-sizing: border-box;
+.join-club-card input,
+.join-club-card select {
   width: 100%;
-  padding: 13px;
-  border: 1px solid #ded3ed;
+  padding: 14px 15px;
+  box-sizing: border-box;
+  border: 1px solid #d9d3e8;
   border-radius: 10px;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-
-.join-club-card input:focus {
-  outline: none;
-  border-color: #8b5ed7;
-  box-shadow: 0 0 0 3px #8b5ed720;
-}
-
-.join-submit-btn {
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  background: #7047d7;
-  color: white;
+  background: #faf9ff;
+  color: #333044;
   font-size: 15px;
+  outline: none;
+  transition: 0.25s;
+}
+
+.join-club-card input:focus,
+.join-club-card select:focus {
+  border-color: #7547dc;
+  box-shadow: 0 0 0 3px rgba(117, 71, 220, 0.12);
+  background: #ffffff;
+}
+
+.join-club-card form > button[type="submit"] {
+  margin-top: 25px;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7045d8, #8b46dc);
+  color: #ffffff;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  margin-top: 10px;
+  transition: 0.3s;
 }
 
-.join-submit-btn:hover {
-  background: #5430b0;
+.join-club-card form > button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(112, 69, 216, 0.25);
 }
 
-.join-submit-btn:disabled {
-  opacity: 0.7;
+.join-club-card form > button[type="submit"]:disabled {
+  opacity: 0.65;
   cursor: not-allowed;
+  transform: none;
 }
 
-.join-message {
+.join-club-message {
+  margin: 15px 0 0;
+  color: #5133a5;
   text-align: center;
-  color: #55317d;
+  line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 480px) {
+.back-to-clubs {
+  display: block;
+  margin: 22px auto 0;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: #7045d8;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.back-to-clubs:hover {
+  color: #4225a0;
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .join-club-page {
+    padding: 25px 12px;
+  }
+
   .join-club-card {
-    padding: 24px;
+    padding: 28px 20px;
+  }
+
+  .join-club-card h1 {
+    font-size: 25px;
   }
 }

@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import CoordinatorDashboard from './pages/CoordinatorDashboard';
-import AdminDashboard from './pages/AdminDashboard';
+
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -20,8 +19,7 @@ function App() {
         path="/"
         element={<Navigate to="/dashboard" replace />}
       />
-      <Route path="/coordinator" element={<CoordinatorDashboard />} />
-      <Route path="/admin" element={<AdminDashboard />} />
+      
       {/* Login and student registration */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

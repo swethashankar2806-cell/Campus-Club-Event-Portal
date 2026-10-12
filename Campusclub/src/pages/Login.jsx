@@ -6,9 +6,9 @@ function Login() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('student');
 
   const navigate = useNavigate();
+  const role = 'student';
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -18,21 +18,14 @@ function Login() {
     localStorage.setItem('student_email', email.trim());
     localStorage.setItem('user_role', role);
 
-    // Open the correct dashboard
-    if (role === 'student') {
-      navigate('/dashboard');
-    } else if (role === 'coordinator') {
-      navigate('/coordinator');
-    } else {
-      navigate('/admin');
-    }
+    navigate('/dashboard');
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
         <img
-          src="/logo.jpeg"
+          src="/src/assets/logo.jpeg"
           alt="Campus Club Logo"
           className="login-logo"
         />
@@ -69,17 +62,6 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-
-          <label>Select Role</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            required
-          >
-            <option value="student">Student</option>
-            <option value="coordinator">Coordinator</option>
-            <option value="admin">Admin</option>
-          </select>
 
           <button type="submit">Login</button>
         </form>
