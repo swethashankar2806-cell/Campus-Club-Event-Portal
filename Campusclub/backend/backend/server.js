@@ -108,7 +108,7 @@ app.post('/api/registrations', async (req, res) => {
     }
 
     res.status(500).json({
-      message: 'Failed to register for the event. Please check the database.',
+      message: error.message,
     });
   }
 });
@@ -251,7 +251,7 @@ app.post('/api/clubs/join', async (req, res) => {
     }
 
     res.status(500).json({
-      message: 'Failed to join the club. Please check the database.',
+      message: error.message,
     });
   } finally {
     if (connection) {
