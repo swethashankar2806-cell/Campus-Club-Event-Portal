@@ -9,7 +9,7 @@ import Profile from './pages/Profile';
 import Register from './pages/Register';
 import JoinClub from './pages/JoinClub';
 import RegisterEvent from './pages/RegisterEvents';
-
+import Payment from './pages/Payments';
 function App() {
   return (
     <Routes>
@@ -21,7 +21,7 @@ function App() {
       {/* Login and student registration */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-
+      <Route path="/payment" element={<Payment />} />
       {/* Pages that use the common Navbar and Sidebar */}
       <Route element={<Layout />}>
         <Route path="/dashboard" element={<Dashboard />} />

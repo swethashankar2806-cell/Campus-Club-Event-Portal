@@ -1,116 +1,75 @@
 
 .register-event-page {
-  min-height: 100vh;
-  box-sizing: border-box;
-  padding: 35px 18px;
-  background: linear-gradient(135deg, #f0fff5, #fff0f7);
-  font-family: Arial, sans-serif;
+    min-height: 100vh;
+    padding: 35px 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #e8f5e9, #fce4ec);
+    font-family: Arial, sans-serif;
 }
 
 .register-event-card {
-  width: 100%;
-  max-width: 520px;
-  box-sizing: border-box;
-  margin: 0 auto;
-  padding: 30px 40px;
-  background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 12px 35px rgba(65, 45, 100, 0.13);
-}
-
-.register-event-icon {
-  font-size: 42px;
-  text-align: center;
+    width: 100%;
+    max-width: 480px;
+    padding: 30px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .register-event-card h1 {
-  margin: 10px 0;
-  color: #49328f;
-  font-size: 28px;
-  text-align: center;
+    color: #237447;
+    text-align: center;
 }
 
-.register-event-subtitle {
-  margin: 12px 0 26px;
-  color: #777187;
-  text-align: center;
-  line-height: 1.6;
+.selected-event {
+    text-align: center;
+    color: #555;
+    margin-bottom: 24px;
 }
 
-.register-event-card form label {
-  display: block;
-  margin: 17px 0 8px;
-  color: #34294d;
-  font-weight: 600;
+.register-event-card label {
+    display: block;
+    margin: 14px 0 7px;
+    font-weight: bold;
+    color: #333;
 }
 
-.register-event-card form input,
-.register-event-card form select {
-  display: block;
-  width: 100%;
-  min-height: 46px;
-  box-sizing: border-box;
-  padding: 12px 14px;
-  border: 1px solid #d9d1eb;
-  border-radius: 10px;
-  outline: none;
-  background: #f8f6ff;
-  color: #34294d;
-  font-size: 15px;
+.register-event-card input,
+.register-event-card select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
 }
 
-.register-event-card form input:focus,
-.register-event-card form select:focus {
-  border-color: #7048df;
-  box-shadow: 0 0 0 3px rgba(112, 72, 223, 0.12);
+.register-event-card button {
+    width: 100%;
+    margin-top: 22px;
+    padding: 14px;
+    background: #237447;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
-.register-event-card form button {
-  width: 100%;
-  margin-top: 24px;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  background: #7048df;
-  color: white;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
+.register-event-card button:hover {
+    background: #185b35;
 }
 
-.register-event-card form button:hover {
-  background: #5731c4;
+.register-event-card button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.register-event-card form button:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.register-event-card form .register-back-button {
-  margin-top: 12px;
-  background: #eee9fa;
-  color: #5731a8;
-}
-
-.register-event-card form .register-back-button:hover {
-  background: #e1d8f8;
-}
-
-.register-event-message {
-  margin: 15px 0 0;
-  color: #49328f;
-  text-align: center;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
-@media (max-width: 550px) {
-  .register-event-card {
-    padding: 26px 20px;
-  }
-
-  .register-event-card h1 {
-    font-size: 24px;
-  }
+.register-message {
+    color: #b42318;
+    text-align: center;
+    overflow-wrap: anywhere;
 }

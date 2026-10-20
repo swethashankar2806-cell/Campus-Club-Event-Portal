@@ -71,7 +71,7 @@ app.post('/api/registrations', async (req, res) => {
             });
         }
 
-        // Confirm that the event exists
+        // Check that the event exists
         const [events] = await pool.execute(
             'SELECT id FROM events WHERE id = ?',
             [event_id]
@@ -119,7 +119,7 @@ app.post('/api/registrations', async (req, res) => {
     }
 });
 
-// Get registrations, optionally filtered by student email
+// Get registrations, optionally filtered by email
 app.get('/api/registrations', async (req, res) => {
     try {
         const { email } = req.query;
@@ -251,7 +251,9 @@ app.post('/api/payments', async (req, res) => {
         const { reg_id, amount, trans_ref } = req.body;
 
         if (
-            !reg_id ||
+            !Number.isInteger(Number(reg_id)) ||
+            Number(reg_id) <= 0 ||
+            amount === undefined ||
             !Number.isFinite(Number(amount)) ||
             Number(amount) <= 0 ||
             typeof trans_ref !== 'string' ||
@@ -262,10 +264,10 @@ app.post('/api/payments', async (req, res) => {
             });
         }
 
-        // Confirm that this registration exists
+        // Check whether the registration exists
         const [registrations] = await pool.execute(
             'SELECT id FROM registrations WHERE id = ?',
-            [reg_id]
+            [Number(reg_id)]
         );
 
         if (registrations.length === 0) {
@@ -274,11 +276,16 @@ app.post('/api/payments', async (req, res) => {
             });
         }
 
+        // Save payment as pending verification
         const [result] = await pool.execute(
             `INSERT INTO payments
              (reg_id, amount, trans_ref, pay_status)
              VALUES (?, ?, ?, 'Pending Verification')`,
-            [reg_id, Number(amount), trans_ref.trim()]
+            [
+                Number(reg_id),
+                Number(amount),
+                trans_ref.trim()
+            ]
         );
 
         res.status(201).json({
