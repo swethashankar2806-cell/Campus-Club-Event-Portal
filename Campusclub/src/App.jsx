@@ -16,6 +16,8 @@ function App() {
       {/* Redirect the home page to Dashboard */}
       <Route
         path="/"
+        
+        
         element={<Navigate to="/dashboard" replace />}
       />
       {/* Login and student registration */}

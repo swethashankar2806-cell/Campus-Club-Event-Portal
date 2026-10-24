@@ -1,11 +1,10 @@
 * {
   box-sizing: border-box;
-<<<<<<< HEAD
 }
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: #f4f7fb;
+  background-color: "#f4f7fb7";
 }
 .login-container {
   min-height: 100vh;
@@ -172,9 +171,6 @@ body {
   border-radius: 12px;
   box-shadow: 0 3px 10px #d5d5d5;
 }
-=======
-}
-
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -301,13 +297,10 @@ body {
   min-height: 190px;
   box-shadow: 0 3px 10px lightgray;
 }
-
->>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
 .event-date {
   width: 65px;
   height: 70px;
   min-width: 65px;
-<<<<<<< HEAD
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -318,8 +311,6 @@ body {
 }
 .event-date strong {
   font-size: 24px;
-}
-=======
   background-color: #2980b9;
   color: white;
   border-radius: 8px;
@@ -332,13 +323,10 @@ body {
   font-size: 23px;
   font-weight: bold;
 }
-
->>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
 .event-date span {
   font-size: 12px;
   margin-top: 3px;
 }
-<<<<<<< HEAD
 .event-details {
   flex: 1;
 }
@@ -369,8 +357,6 @@ body {
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
-=======
-
 .event-info {
   flex: 1;
 }
@@ -408,25 +394,17 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 22px;
 }
-
->>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
 .quick-card {
   background-color: white;
   padding: 20px;
   border-radius: 10px;
-<<<<<<< HEAD
   box-shadow: 0 3px 10px #d5d5d5;
-}
-=======
   box-shadow: 0 3px 10px lightgray;
 }
-
->>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
 .quick-card h3 {
   margin-top: 0;
   color: #183b56;
 }
-<<<<<<< HEAD
 .quick-card p {
   color: #607d8b;
   font-size: 14px;
@@ -462,9 +440,7 @@ body {
   .welcome-box h1 {
     font-size: 28px;
   }
-=======
-
 .quick-card p {
   color: #607d8b;
->>>>>>> f8f353722619dbaadbdaaf5db18f0ae9097280f1
+  }
 }

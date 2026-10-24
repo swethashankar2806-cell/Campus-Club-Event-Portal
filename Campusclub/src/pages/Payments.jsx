@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { QRCodeSVG } from 'qrcode.react';
 import '../styles/Payment.css';
 
-// Replace these with your actual details
-const UPI_ID = 'rithanya162@okicici';
-const PAYEE_NAME = 'Campus Club';
-const WHATSAPP_NUMBER = '91 9150114181';
 const REGISTRATION_FEE = 100;
+const BACKEND_URL = 'http://localhost:5000';
 
 function Payments() {
   const location = useLocation();
@@ -22,7 +18,6 @@ function Payments() {
     phone
   } = location.state || {};
 
-  const [transRef, setTransRef] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -32,6 +27,7 @@ function Payments() {
         <div className="payment-card">
           <h1>Registration Not Found</h1>
           <p>Please register for an event first.</p>
+
           <button onClick={() => navigate('/events')}>
             Go to Events
           </button>
@@ -42,75 +38,127 @@ function Payments() {
 
   const eventName = event.title || event.name || 'Campus Event';
 
-  // Generate UPI payment link
-  const upiLink = `upi://pay?pa=${encodeURIComponent(
-    UPI_ID
-  )}&pn=${encodeURIComponent(
-    PAYEE_NAME
-  )}&am=${REGISTRATION_FEE.toFixed(
-    2
-  )}&cu=INR&tn=${encodeURIComponent(eventName)}`;
+  // Load Razorpay Checkout
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+      const script = document.createElement('script');
+
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+
+      document.body.appendChild(script);
+    });
+  };
+
+  // Handle payment
+  const handlePayment = async () => {
     setMessage('');
-
-    if (
-      UPI_ID === 'YOUR_REAL_UPI_ID' ||
-      WHATSAPP_NUMBER === '91YOUR_COORDINATOR_NUMBER'
-    ) {
-      setMessage(
-        'Please configure your actual UPI ID and coordinator WhatsApp number.'
-      );
-      return;
-    }
-
-    if (!transRef.trim()) {
-      setMessage('Please enter your UPI transaction reference.');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        'http://localhost:5000/api/payments',
-        {
-          reg_id: registrationId,
-          amount: REGISTRATION_FEE,
-          trans_ref: transRef.trim()
+      // Step 1: Load Razorpay Checkout
+      const loaded = await loadRazorpay();
+
+      if (!loaded) {
+        setMessage(
+          'Unable to load Razorpay. Please check your internet connection.'
+        );
+        return;
+      }
+
+      // Step 2: Create an order on the backend
+      const orderResponse = await axios.post(
+        `${BACKEND_URL}/create-order`
+      );
+
+      const { order, key_id } = orderResponse.data;
+
+      // Step 3: Configure Razorpay Checkout
+      const options = {
+        key: key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Campus Club',
+        description: `Registration for ${eventName}`,
+        order_id: order.id,
+
+        prefill: {
+          name: studentName || '',
+          email: studentEmail || '',
+          contact: phone || ''
+        },
+
+        notes: {
+          registrationId: String(registrationId),
+          eventName: eventName
+        },
+
+        theme: {
+          color: '#5e257f'
+        },
+
+        // Step 4: Verify payment on the backend
+        handler: async function (response) {
+          try {
+            const verifyResponse = await axios.post(
+              `${BACKEND_URL}/verify-payment`,
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              }
+            );
+
+            if (verifyResponse.data.success) {
+              setMessage(
+                `Payment verified successfully! Payment ID: ${response.razorpay_payment_id}`
+              );
+            } else {
+              setMessage(
+                'Payment could not be verified. Please contact the coordinator.'
+              );
+            }
+          } catch (error) {
+            console.error('Payment verification error:', error);
+
+            setMessage(
+              'Payment verification failed. Please contact the coordinator.'
+            );
+          }
+        },
+
+        modal: {
+          ondismiss: function () {
+            setMessage('Payment window closed.');
+          }
         }
-      );
+      };
 
-      const whatsappMessage =
-        `Hello Campus Club Coordinator!\n\n` +
-        `Event: ${eventName}\n` +
-        `Registration ID: ${registrationId}\n` +
-        `Student Name: ${studentName || ''}\n` +
-        `Student Email: ${studentEmail || ''}\n` +
-        `Phone: ${phone || ''}\n` +
-        `Amount: Rs. ${REGISTRATION_FEE}\n` +
-        `Transaction Reference: ${transRef.trim()}\n` +
-        `Status: Pending Verification\n\n` +
-        `Please verify my payment. Thank you!`;
+      // Step 5: Open the payment window
+      const paymentObject = new window.Razorpay(options);
 
-      const whatsappURL =
-        `https://wa.me/${WHATSAPP_NUMBER}?text=` +
-        encodeURIComponent(whatsappMessage);
+      paymentObject.on('payment.failed', function (response) {
+        console.error('Payment failed:', response.error);
 
-      setMessage(
-        (response.data.message || 'Payment details submitted.') +
-        ' Payment is pending verification.'
-      );
+        setMessage(
+          response.error.description || 'Payment failed. Please try again.'
+        );
+      });
 
-      // Open WhatsApp in a new tab
-      window.open(whatsappURL, '_blank', 'noopener,noreferrer');
+      paymentObject.open();
     } catch (error) {
-      console.error('Payment submission error:', error);
+      console.error('Payment error:', error);
 
       setMessage(
         error.response?.data?.message ||
-        'Could not submit payment details. Check whether the backend is running.'
+        'Unable to start payment. Please check whether the backend is running.'
       );
     } finally {
       setLoading(false);
@@ -123,13 +171,21 @@ function Payments() {
         <h1>Event Payment</h1>
 
         <p className="payment-subtitle">
-          Scan the QR code using Google Pay, PhonePe, or another UPI app.
+          Complete your event registration payment securely using Razorpay.
         </p>
 
         <div className="event-details">
-          <p><strong>Event:</strong> {eventName}</p>
-          <p><strong>Student:</strong> {studentName}</p>
-          <p><strong>Registration ID:</strong> {registrationId}</p>
+          <p>
+            <strong>Event:</strong> {eventName}
+          </p>
+
+          <p>
+            <strong>Student:</strong> {studentName || 'Not provided'}
+          </p>
+
+          <p>
+            <strong>Registration ID:</strong> {registrationId}
+          </p>
         </div>
 
         <div className="payment-amount">
@@ -137,40 +193,13 @@ function Payments() {
           <h2>₹{REGISTRATION_FEE.toFixed(2)}</h2>
         </div>
 
-        <div className="qr-container">
-          <QRCodeSVG
-            value={upiLink}
-            size={220}
-            level="H"
-            includeMargin
-          />
-        </div>
-
-        <p className="payment-hint">
-          Scan the QR code and verify the recipient name and amount
-          in your UPI app before confirming payment.
-        </p>
-
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="transRef">
-            UPI Transaction Reference
-          </label>
-
-          <input
-            id="transRef"
-            type="text"
-            value={transRef}
-            onChange={(e) => setTransRef(e.target.value)}
-            placeholder="Enter transaction reference"
-            required
-          />
-
-          <button type="submit" disabled={loading}>
-            {loading
-              ? 'Submitting...'
-              : 'Submit Details & Open WhatsApp'}
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={handlePayment}
+          disabled={loading}
+        >
+          {loading ? 'Processing...' : 'Pay ₹100 Now'}
+        </button>
 
         {message && (
           <p className="payment-message" role="status">
@@ -179,9 +208,10 @@ function Payments() {
         )}
 
         <p className="payment-warning">
-          Payment status remains pending until the coordinator
-          verifies that the money was received. Submitting a
-          transaction reference alone does not confirm payment.
+          Use Razorpay Test Mode while developing. A verified payment
+          signature confirms the checkout response, but your application
+          must also record the payment against the registration before
+          marking the registration as paid.
         </p>
       </div>
     </div>
