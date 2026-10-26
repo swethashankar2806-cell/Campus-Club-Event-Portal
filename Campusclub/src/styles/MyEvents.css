@@ -17,7 +17,7 @@
 
 .my-events-page > p {
   margin-bottom: 25px;
-  color: #0d0d0e;
+  color: black;
   text-align: center;
   line-height: 1.6;
 }
@@ -27,6 +27,7 @@
   gap: 12px;
   width: 100%;
   max-width: 650px;
+  color: #040404;
   margin: 0 auto 35px;
 }
 
@@ -38,6 +39,7 @@
   border-radius: 10px;
   outline: none;
   background: #fff;
+  color: #040404;
   font-size: 15px;
 }
 

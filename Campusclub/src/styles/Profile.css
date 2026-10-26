@@ -1,65 +1,121 @@
-.profile-page {
+* {
+  box-sizing: border-box;
+}
+
+.payment-page {
   min-height: 100vh;
-  padding: 35px 20px;
-  text-align: center;
-  background: linear-gradient(135deg, #f5f0ff, #e6f7ff);
-}
-
-.profile-page h1 {
-  color: #29234d;
-  margin-bottom: 30px;
-}
-
-.profile-card {
-  max-width: 380px;
-  margin: 0 auto;
-  padding: 30px 25px;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(54, 42, 100, 0.15);
-}
-
-.profile-avatar {
-  width: 110px;
-  height: 110px;
-  margin: 0 auto 18px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #7857ff, #e879c5);
-  color: white;
-  font-size: 36px;
-  font-weight: bold;
-  border: 5px solid #eee8ff;
-  box-shadow: 0 5px 15px rgba(120, 87, 255, 0.25);
+  padding: 30px 16px;
+  background: linear-gradient(135deg, #e2f7ee, #eaf1ff);
+  font-family: Arial, sans-serif;
 }
 
-.profile-card h2 {
-  margin: 10px 0 18px;
-  color: #29234d;
+.payment-card {
+  width: 100%;
+  max-width: 630px;
+  padding: 40px 32px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.09);
+  text-align: center;
 }
 
-.profile-card p {
+.payment-card h1 {
+  margin: 0;
+  color: #16805b;
+  font-size: 42px;
+}
+
+.subtitle {
+  margin: 10px 0 26px;
+  color: #718096;
+  line-height: 1.6;
+}
+
+.event-details {
+  padding: 18px;
+  border-radius: 12px;
+  background: #f1f5fa;
   text-align: left;
-  color: #77758b;
-  margin: 12px 0;
+  color: #52677a;
+}
+
+.event-details p {
+  margin: 10px 0;
   overflow-wrap: anywhere;
 }
 
-.profile-button {
-  margin-top: 18px;
-  padding: 12px 25px;
-  background: #6546ed;
-  color: white;
-  border: none;
-  border-radius: 9px;
-  font-size: 15px;
-  cursor: pointer;
-  transition: 0.3s;
+.fee-box {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #e6f8ef;
 }
 
-.profile-button:hover {
-  background: #4930bd;
-  transform: translateY(-2px);
+.fee-box p {
+  margin: 0;
+  color: #718096;
+  font-size: 17px;
+}
+
+.fee-box h2 {
+  margin: 12px 0 0;
+  color: #13845b;
+  font-size: 30px;
+}
+
+.pay-button,
+.back-button {
+  margin-top: 22px;
+  padding: 13px 25px;
+  border: none;
+  border-radius: 9px;
+  background: #13845b;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.pay-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.back-button {
+  display: block;
+  margin: 15px auto 0;
+}
+
+.payment-message {
+  margin-top: 18px;
+  color: #b45309;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.payment-message.success {
+  color: #16805b;
+}
+
+.payment-note {
+  margin-top: 24px;
+  padding: 15px;
+  border-radius: 10px;
+  background: #fff6e5;
+  color: #a65a08;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+@media (max-width: 500px) {
+  .payment-card {
+    padding: 28px 18px;
+  }
+
+  .payment-card h1 {
+    font-size: 32px;
+  }
 }
