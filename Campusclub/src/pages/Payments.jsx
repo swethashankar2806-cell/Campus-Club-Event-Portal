@@ -1,10 +1,10 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/Payment.css";
 
-const API_URL = "https://campus-club-backend.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL;
 
 function loadRazorpay() {
   return new Promise((resolve) => {
@@ -17,29 +17,34 @@ function loadRazorpay() {
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.onload = () => resolve(true);
     script.onerror = () => resolve(false);
-
     document.body.appendChild(script);
   });
 }
 
-export default function Payments() {
+function Payments() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const registrationId = Number(location.state?.registrationId);
-  const eventName =
-    location.state?.eventName || "Technical Symposium";
-  const studentName =
-    location.state?.studentName || "Student";
+  const {
+    registrationId,
+    eventName = "Campus Club Event",
+    studentName = "",
+    studentEmail = "",
+  } = location.state || {};
 
   const [loading, setLoading] = useState(false);
-  const [paid, setPaid] = useState(false);
   const [message, setMessage] = useState("");
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  const amountInRupees = 100;
 
   const handlePayment = async () => {
-    if (loading || paid) return;
+    if (!API_URL) {
+      setMessage("Backend URL is missing. Please configure VITE_API_URL.");
+      return;
+    }
 
-    if (!Number.isInteger(registrationId) || registrationId <= 0) {
+    if (!registrationId) {
       setMessage(
         "Registration ID is missing. Please register for the event again."
       );
@@ -50,66 +55,72 @@ export default function Payments() {
     setMessage("");
 
     try {
-      const scriptLoaded = await loadRazorpay();
+      const loaded = await loadRazorpay();
 
-      if (!scriptLoaded) {
-        throw new Error(
-          "Unable to load Razorpay. Check your internet connection."
-        );
+      if (!loaded) {
+        throw new Error("Unable to load Razorpay checkout.");
       }
 
-      // Create a Razorpay order through the backend.
-      const { data: order } = await axios.post(
+      // Create an order on the backend.
+      const orderResponse = await axios.post(
         `${API_URL}/api/payment/create-order`,
         { registrationId }
       );
 
+      const order = orderResponse.data;
+
+      if (!order.orderId || !order.keyId) {
+        throw new Error("The backend did not return valid payment details.");
+      }
+
       const options = {
         key: order.keyId,
         amount: order.amount,
-        currency: order.currency,
+        currency: order.currency || "INR",
         name: "Campus Club",
-        description: `Event Registration: ${eventName}`,
+        description: `Registration fee - ${eventName}`,
         order_id: order.orderId,
 
         prefill: {
-          name: studentName
+          name: studentName,
+          email: studentEmail,
         },
 
         theme: {
-          color: "#13845b"
+          color: "#2563eb",
         },
 
         handler: async function (response) {
           try {
             setMessage("Verifying your payment...");
 
-            const { data } = await axios.post(
+            const verifyResponse = await axios.post(
               `${API_URL}/api/payment/verify`,
               {
                 registrationId,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
+                razorpay_signature: response.razorpay_signature,
               }
             );
 
-            if (data.success) {
-              setPaid(true);
+            if (
+              verifyResponse.data.success === true ||
+              verifyResponse.data.verified === true
+            ) {
+              setPaymentSuccess(true);
               setMessage(
                 "Payment successful! Your registration is confirmed."
               );
             } else {
               setMessage(
-                data.message || "Payment verification failed."
+                "Payment verification was not confirmed. Please contact the event team."
               );
             }
           } catch (error) {
-            console.error("Verification error:", error);
-
             setMessage(
               error.response?.data?.message ||
-              "Payment verification failed. Check your registration status before trying again."
+                "Payment verification failed. Please contact the event team before trying again."
             );
           } finally {
             setLoading(false);
@@ -119,9 +130,9 @@ export default function Payments() {
         modal: {
           ondismiss: function () {
             setLoading(false);
-            setMessage("Payment window closed. You can try again.");
-          }
-        }
+            setMessage("Payment was cancelled. You can try again.");
+          },
+        },
       };
 
       const checkout = new window.Razorpay(options);
@@ -130,89 +141,79 @@ export default function Payments() {
         setLoading(false);
         setMessage(
           response.error?.description ||
-          "Payment failed. Please try again."
+            "Payment failed. Please try again."
         );
       });
 
       checkout.open();
     } catch (error) {
-      console.error("Payment error:", error);
-
+      setLoading(false);
       setMessage(
         error.response?.data?.message ||
-        error.message ||
-        "Unable to start payment. Check whether the backend is running."
+          "Unable to start payment. Please check whether the backend is running."
       );
-
-      setLoading(false);
     }
   };
 
   return (
-    <div className="payment-page">
+    <div className="payment-container">
       <div className="payment-card">
-        <h1>Event Payment</h1>
+        <h2>Event Payment</h2>
 
-        <p className="subtitle">
-          Complete your event registration securely using Razorpay.
+        <p>
+          Complete your event registration payment securely using Razorpay.
         </p>
 
-        <div className="event-details">
+        <div className="payment-details">
           <p>
             <strong>Event:</strong> {eventName}
           </p>
 
           <p>
-            <strong>Student:</strong> {studentName}
+            <strong>Student:</strong> {studentName || "Student"}
           </p>
 
           <p>
             <strong>Registration ID:</strong>{" "}
-            {registrationId || "Missing"}
+            {registrationId || "Not available"}
           </p>
-        </div>
 
-        <div className="fee-box">
-          <p>Registration Fee</p>
-          <h2>₹100.00</h2>
+          <div className="payment-amount">
+            <span>Registration Fee</span>
+            <strong>₹{amountInRupees.toFixed(2)}</strong>
+          </div>
         </div>
-
-        <button
-          className="pay-button"
-          onClick={handlePayment}
-          disabled={loading || paid}
-        >
-          {paid
-            ? "Payment Completed"
-            : loading
-            ? "Processing..."
-            : "Pay ₹100 Now"}
-        </button>
 
         {message && (
           <p
-            className={`payment-message ${paid ? "success" : ""}`}
+            className={
+              paymentSuccess ? "payment-message success" : "payment-message"
+            }
             role="status"
           >
             {message}
           </p>
         )}
 
-        {paid && (
+        {paymentSuccess ? (
           <button
-            className="back-button"
-            onClick={() => navigate("/events")}
+            className="payment-button"
+            onClick={() => navigate("/my-events")}
           >
-            Back to Events
+            Go to My Events
+          </button>
+        ) : (
+          <button
+            className="payment-button"
+            onClick={handlePayment}
+            disabled={loading || !registrationId}
+          >
+            {loading ? "Processing..." : "Pay ₹100 Now"}
           </button>
         )}
-
-        <div className="payment-note">
-          Use Razorpay Test Mode during development.
-          The backend must verify payment before marking
-          the registration as paid.
-        </div>
       </div>
     </div>
   );
 }
+
+export default Payments;
