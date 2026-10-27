@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/MyEvents.css';
 
+const API_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:5000'
+).trim().replace(/\/+$/, '');
+
 function MyEvents() {
   const [email, setEmail] = useState(
     localStorage.getItem('student_email') || ''
@@ -23,7 +27,7 @@ function MyEvents() {
 
     try {
       const response = await axios.get(
-        'http://localhost:5000/api/registrations',
+        `${API_URL}/api/registrations`,
         {
           params: { email: emailToSearch.trim() }
         }

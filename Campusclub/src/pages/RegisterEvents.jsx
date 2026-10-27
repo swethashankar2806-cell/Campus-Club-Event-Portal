@@ -3,6 +3,10 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/RegisterEvent.css';
 
+const API_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:5000'
+).trim().replace(/\/+$/, '');
+
 function RegisterEvent() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -42,7 +46,7 @@ function RegisterEvent() {
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/registrations',
+        `${API_URL}/api/registrations`,
         {
           event_id: event.id,
           ...formData

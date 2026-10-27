@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/Dashboard.css';
 
+const API_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:5000'
+).trim().replace(/\/+$/, '');
+
 function Dashboard() {
   const navigate = useNavigate();
 
@@ -13,7 +17,7 @@ function Dashboard() {
   // Fetch events from the backend
   useEffect(() => {
     axios
-      .get('http://localhost:5000/api/events')
+      .get(`${API_URL}/api/events`)
       .then((response) => {
         setEvents(response.data);
         setError('');

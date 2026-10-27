@@ -3,6 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/JoinClub.css';
 
+const API_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:5000'
+).trim().replace(/\/+$/, '');
+
 function JoinClub() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,7 +74,7 @@ function JoinClub() {
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/clubs/join',
+        `${API_URL}/api/clubs/join`,
         {
           club_id: club.id,
           student_name: formData.student_name.trim(),

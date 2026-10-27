@@ -4,7 +4,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/Payment.css";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (
+  import.meta.env.VITE_API_URL || "http://localhost:5000"
+).trim().replace(/\/+$/, "");
 
 function loadRazorpay() {
   return new Promise((resolve) => {
@@ -21,7 +23,7 @@ function loadRazorpay() {
   });
 }
 
-function Payments() {
+export default function Payments() {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -37,41 +39,39 @@ function Payments() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const amountInRupees = 100;
+  const validRegistrationId =
+    Number.isInteger(Number(registrationId)) &&
+    Number(registrationId) > 0;
 
   const handlePayment = async () => {
-    if (!API_URL) {
-      setMessage("Backend URL is missing. Please configure VITE_API_URL.");
-      return;
-    }
-
-    if (!registrationId) {
-      setMessage(
-        "Registration ID is missing. Please register for the event again."
-      );
+    if (!validRegistrationId) {
+      setMessage("Registration ID is missing. Please register again.");
       return;
     }
 
     setLoading(true);
-    setMessage("");
+    setMessage("Connecting to payment service...");
 
     try {
       const loaded = await loadRazorpay();
 
       if (!loaded) {
-        throw new Error("Unable to load Razorpay checkout.");
+        throw new Error("Unable to load Razorpay Checkout.");
       }
 
-      // Create an order on the backend.
       const orderResponse = await axios.post(
         `${API_URL}/api/payment/create-order`,
-        { registrationId }
+        { registrationId: Number(registrationId) },
+        { timeout: 30000 }
       );
 
       const order = orderResponse.data;
 
-      if (!order.orderId || !order.keyId) {
-        throw new Error("The backend did not return valid payment details.");
+      if (!order.orderId || !order.keyId || !order.amount) {
+        throw new Error("Incomplete payment order details.");
       }
+
+      setMessage("");
 
       const options = {
         key: order.keyId,
@@ -87,40 +87,37 @@ function Payments() {
         },
 
         theme: {
-          color: "#2563eb",
+          color: "#5940ed",
         },
 
-        handler: async function (response) {
-          try {
-            setMessage("Verifying your payment...");
+        handler: async (response) => {
+          setMessage("Payment received. Verifying payment...");
 
+          try {
             const verifyResponse = await axios.post(
               `${API_URL}/api/payment/verify`,
               {
-                registrationId,
+                registrationId: Number(registrationId),
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-              }
+              },
+              { timeout: 30000 }
             );
 
-            if (
-              verifyResponse.data.success === true ||
-              verifyResponse.data.verified === true
-            ) {
+            if (verifyResponse.data.success) {
               setPaymentSuccess(true);
-              setMessage(
-                "Payment successful! Your registration is confirmed."
-              );
+              setMessage("Payment verified successfully!");
             } else {
               setMessage(
-                "Payment verification was not confirmed. Please contact the event team."
+                verifyResponse.data.message ||
+                  "Payment could not be verified."
               );
             }
           } catch (error) {
             setMessage(
               error.response?.data?.message ||
-                "Payment verification failed. Please contact the event team before trying again."
+                "Unable to verify payment. Please check your payment status."
             );
           } finally {
             setLoading(false);
@@ -128,20 +125,19 @@ function Payments() {
         },
 
         modal: {
-          ondismiss: function () {
+          ondismiss: () => {
             setLoading(false);
-            setMessage("Payment was cancelled. You can try again.");
+            setMessage("Checkout closed. You can try again.");
           },
         },
       };
 
       const checkout = new window.Razorpay(options);
 
-      checkout.on("payment.failed", function (response) {
+      checkout.on("payment.failed", (response) => {
         setLoading(false);
         setMessage(
-          response.error?.description ||
-            "Payment failed. Please try again."
+          response.error?.description || "Payment failed. Please try again."
         );
       });
 
@@ -150,7 +146,8 @@ function Payments() {
       setLoading(false);
       setMessage(
         error.response?.data?.message ||
-          "Unable to start payment. Please check whether the backend is running."
+          error.message ||
+          "Unable to connect to the payment service."
       );
     }
   };
@@ -159,10 +156,7 @@ function Payments() {
     <div className="payment-container">
       <div className="payment-card">
         <h2>Event Payment</h2>
-
-        <p>
-          Complete your event registration payment securely using Razorpay.
-        </p>
+        <p>Pay securely using Razorpay Checkout.</p>
 
         <div className="payment-details">
           <p>
@@ -175,7 +169,7 @@ function Payments() {
 
           <p>
             <strong>Registration ID:</strong>{" "}
-            {registrationId || "Not available"}
+            {validRegistrationId ? registrationId : "Missing"}
           </p>
 
           <div className="payment-amount">
@@ -187,7 +181,9 @@ function Payments() {
         {message && (
           <p
             className={
-              paymentSuccess ? "payment-message success" : "payment-message"
+              paymentSuccess
+                ? "payment-message success"
+                : "payment-message"
             }
             role="status"
           >
@@ -206,7 +202,7 @@ function Payments() {
           <button
             className="payment-button"
             onClick={handlePayment}
-            disabled={loading || !registrationId}
+            disabled={loading || !validRegistrationId}
           >
             {loading ? "Processing..." : "Pay ₹100 Now"}
           </button>
@@ -215,5 +211,3 @@ function Payments() {
     </div>
   );
 }
-
-export default Payments;
