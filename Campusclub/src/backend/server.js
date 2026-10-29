@@ -1,132 +1,141 @@
 
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const mysql = require("mysql2/promise");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
-const path = require("path");
-
-dotenv.config({ path: path.join(__dirname, ".env") });
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const AMOUNT = 10000; // ₹100 in paise
 
 app.use(cors());
 app.use(express.json());
 
+// ==================== MYSQL CONNECTION ====================
+
 const db = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
+  host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER || "root",
+  user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || "campous_club_db",
+  database: process.env.DB_NAME,
+  ssl: process.env.DB_HOST?.includes("aivencloud.com")
+    ? { rejectUnauthorized: false }
+    : undefined,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0,
-  ssl: process.env.DB_SSL === "true"
-    ? { rejectUnauthorized: true }
-    : undefined,
 });
+
+// ==================== RAZORPAY CONFIGURATION ====================
 
 let razorpay = null;
 
-if (
-  process.env.RAZORPAY_KEY_ID &&
-  process.env.RAZORPAY_KEY_SECRET
-) {
+function initializeRazorpay() {
+  const keyId = process.env.RAZORPAY_KEY_ID?.trim();
+  const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
+
+  if (!keyId || !keySecret) {
+    console.error("Razorpay credentials are missing.");
+    razorpay = null;
+    return;
+  }
+
   razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
+    key_id: keyId,
+    key_secret: keySecret,
   });
+
+  console.log("Razorpay initialized.");
+  console.log("Key ID prefix:", keyId.slice(0, 12));
+  console.log("Secret loaded:", Boolean(keySecret));
+  console.log("Secret length:", keySecret.length);
 }
 
-// Home
+// Initialize once at startup.
+initializeRazorpay();
+
+// ==================== HEALTH CHECK ====================
+
 app.get("/", (req, res) => {
   res.json({ message: "Campus Club backend is running" });
 });
 
-// Health check
 app.get("/api/health", async (req, res) => {
+  let databaseConnected = false;
+
   try {
     await db.query("SELECT 1");
-    res.json({
-      success: true,
-      database: "connected",
-      razorpayConfigured: Boolean(razorpay),
-    });
+    databaseConnected = true;
   } catch (error) {
-    console.error("Health check:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Database connection failed",
-    });
+    console.error("Health check error:", error.message);
   }
+
+  res.status(databaseConnected ? 200 : 503).json({
+    status: databaseConnected ? "OK" : "ERROR",
+    database: databaseConnected ? "connected" : "disconnected",
+    razorpayConfigured: Boolean(razorpay),
+  });
 });
 
-// Get events
+// ==================== EVENTS ====================
+
 app.get("/api/events", async (req, res) => {
   try {
-    const [rows] = await db.execute(
+    const [events] = await db.query(
       "SELECT * FROM events ORDER BY event_date"
     );
-    res.json(rows);
+
+    res.json(events);
   } catch (error) {
-    console.error("Events:", error.message);
-    res.status(500).json({
-      message: "Unable to fetch events",
-    });
+    console.error("Get events error:", error.message);
+    res.status(500).json({ message: "Unable to fetch events" });
   }
 });
 
-// Create registration
+// ==================== CLUBS ====================
+
+app.get("/api/clubs", async (req, res) => {
+  try {
+    const [clubs] = await db.query("SELECT * FROM clubs");
+    res.json(clubs);
+  } catch (error) {
+    console.error("Get clubs error:", error.message);
+    res.status(500).json({ message: "Unable to fetch clubs" });
+  }
+});
+
+// ==================== EVENT REGISTRATION ====================
+
 app.post("/api/registrations", async (req, res) => {
   try {
     const {
       event_id,
-      eventId,
       student_name,
-      studentName,
       student_email,
-      studentEmail,
       register_number,
       department,
       year_of_student,
       phone,
     } = req.body;
 
-    const eventIdValue = Number(event_id ?? eventId);
-    const name = String(student_name ?? studentName ?? "").trim();
-    const email = String(student_email ?? studentEmail ?? "")
-      .trim()
-      .toLowerCase();
-
     if (
-      !Number.isSafeInteger(eventIdValue) ||
-      eventIdValue <= 0 ||
-      !name ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      !event_id ||
+      !student_name ||
+      !student_email ||
+      !register_number ||
+      !department ||
+      !year_of_student ||
+      !phone
     ) {
       return res.status(400).json({
-        message: "Valid event, student name and email are required",
+        message: "Please provide all registration details",
       });
     }
 
-    if (phone && !/^\d{10}$/.test(String(phone))) {
+    if (!/^\d{10}$/.test(String(phone))) {
       return res.status(400).json({
         message: "Phone number must contain exactly 10 digits",
-      });
-    }
-
-    const [eventRows] = await db.execute(
-      "SELECT id FROM events WHERE id = ?",
-      [eventIdValue]
-    );
-
-    if (eventRows.length === 0) {
-      return res.status(404).json({
-        message: "Event not found",
       });
     }
 
@@ -134,40 +143,33 @@ app.post("/api/registrations", async (req, res) => {
       `INSERT INTO registrations
        (event_id, student_name, student_email, register_number,
         department, year_of_student, phone, payment_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'UNPAID')`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING')`,
       [
-        eventIdValue,
-        name,
-        email,
-        register_number || null,
-        department || null,
-        year_of_student || null,
-        phone || null,
+        event_id,
+        student_name,
+        student_email,
+        register_number,
+        department,
+        year_of_student,
+        phone,
       ]
     );
 
-    // Return the actual ID generated by MySQL.
-    return res.status(201).json({
-      success: true,
+    res.status(201).json({
+      message: "Registration successful",
       registrationId: result.insertId,
-      eventId: eventIdValue,
-      studentName: name,
-      studentEmail: email,
-      payment_status: "UNPAID",
-      message: "Registration saved successfully",
     });
   } catch (error) {
-    console.error("Create registration:", error.message);
-    return res.status(500).json({
-      message: "Unable to save registration",
+    console.error("Registration error:", error);
+    res.status(500).json({
+      message: "Unable to register for event",
     });
   }
 });
 
-// Get registrations for a student
 app.get("/api/registrations", async (req, res) => {
   try {
-    const email = String(req.query.email || "").trim().toLowerCase();
+    const { email } = req.query;
 
     if (!email) {
       return res.status(400).json({
@@ -176,91 +178,61 @@ app.get("/api/registrations", async (req, res) => {
     }
 
     const [rows] = await db.execute(
-      `SELECT id, event_id, student_name, student_email,
-              registered_at, register_number, department,
-              year_of_student, phone, payment_status
-       FROM registrations
-       WHERE student_email = ?
-       ORDER BY id DESC`,
+      `SELECT r.*, e.*
+       FROM registrations r
+       LEFT JOIN events e ON r.event_id = e.id
+       WHERE r.student_email = ?
+       ORDER BY r.registered_at DESC`,
       [email]
     );
 
     res.json(rows);
   } catch (error) {
-    console.error("Registrations:", error.message);
+    console.error("Fetch registrations error:", error);
     res.status(500).json({
       message: "Unable to fetch registrations",
     });
   }
 });
 
-// Get clubs
-app.get("/api/clubs", async (req, res) => {
-  try {
-    const [rows] = await db.execute("SELECT * FROM clubs");
-    res.json(rows);
-  } catch (error) {
-    console.error("Clubs:", error.message);
-    res.status(500).json({
-      message: "Unable to fetch clubs",
-    });
-  }
-});
+// ==================== JOIN CLUB ====================
 
-// Join a club
 app.post("/api/clubs/join", async (req, res) => {
   try {
     const {
       club_id,
-      clubId,
       student_name,
-      studentName,
       student_email,
-      studentEmail,
-      register_number,
       department,
       year_of_student,
+      register_number,
       phone,
     } = req.body;
 
-    const clubIdValue = Number(club_id ?? clubId);
-    const name = String(student_name ?? studentName ?? "").trim();
-    const email = String(student_email ?? studentEmail ?? "")
-      .trim()
-      .toLowerCase();
-
     if (
-      !Number.isSafeInteger(clubIdValue) ||
-      clubIdValue <= 0 ||
-      !name ||
-      !email
+      !club_id ||
+      !student_name ||
+      !student_email ||
+      !department ||
+      !year_of_student ||
+      !register_number ||
+      !phone
     ) {
       return res.status(400).json({
-        message: "Club, student name and email are required",
+        message: "Please provide all club membership details",
       });
     }
 
-    if (phone && !/^\d{10}$/.test(String(phone))) {
+    if (!/^\d{10}$/.test(String(phone))) {
       return res.status(400).json({
         message: "Phone number must contain exactly 10 digits",
-      });
-    }
-
-    const [clubRows] = await db.execute(
-      "SELECT id FROM clubs WHERE id = ?",
-      [clubIdValue]
-    );
-
-    if (clubRows.length === 0) {
-      return res.status(404).json({
-        message: "Club not found",
       });
     }
 
     const [existing] = await db.execute(
       `SELECT id FROM club_members
        WHERE club_id = ? AND student_email = ?`,
-      [clubIdValue, email]
+      [club_id, student_email]
     );
 
     if (existing.length > 0) {
@@ -269,171 +241,64 @@ app.post("/api/clubs/join", async (req, res) => {
       });
     }
 
-    await db.execute(
+    const [result] = await db.execute(
       `INSERT INTO club_members
-       (club_id, student_name, student_email, register_number,
-        department, year_of_student, phone)
+       (club_id, student_name, student_email, department,
+        year_of_student, REGISTER_NUMBER, phone)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
-        clubIdValue,
-        name,
-        email,
-        register_number || null,
-        department || null,
-        year_of_student || null,
-        phone || null,
+        club_id,
+        student_name,
+        student_email,
+        department,
+        year_of_student,
+        register_number,
+        phone,
       ]
     );
 
     res.status(201).json({
-      success: true,
-      message: "Club joined successfully",
+      message: "Successfully joined club",
+      membershipId: result.insertId,
     });
   } catch (error) {
-    console.error("Join club:", error.message);
+    console.error("Join club error:", error);
     res.status(500).json({
       message: "Unable to join club",
     });
   }
 });
 
-// Create Razorpay order
+// ==================== CREATE RAZORPAY ORDER ====================
+
 app.post("/api/payment/create-order", async (req, res) => {
   try {
-    if (!razorpay) {
-      return res.status(503).json({
-        message: "Razorpay keys are not configured on the backend",
+    const { registrationId } = req.body;
+
+    console.log(
+      "Create order requested for registration:",
+      registrationId
+    );
+
+    if (!registrationId) {
+      return res.status(400).json({
+        message: "Registration ID is required",
       });
     }
 
-    const registrationId = Number(req.body.registrationId);
+    if (!razorpay) {
+      console.error("Razorpay is not configured.");
 
-    if (
-      !Number.isSafeInteger(registrationId) ||
-      registrationId <= 0
-    ) {
-      return res.status(400).json({
-        message: "Valid registration ID is required",
+      return res.status(500).json({
+        message: "Payment service is not configured",
       });
     }
 
     const [rows] = await db.execute(
-      `SELECT id, event_id, student_name, student_email,
-              payment_status, razorpay_order_id
+      `SELECT id, student_name, student_email, payment_status
        FROM registrations
        WHERE id = ?`,
       [registrationId]
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).json({
-        message: "Registration not found. Please register again.",
-      });
-    }
-
-    const registration = rows[0];
-
-    if (registration.payment_status === "PAID") {
-      return res.status(409).json({
-        message: "This registration is already paid",
-      });
-    }
-
-    // Reuse an existing pending order instead of creating duplicates.
-    if (
-      registration.payment_status === "PENDING" &&
-      registration.razorpay_order_id
-    ) {
-      try {
-        const existingOrder = await razorpay.orders.fetch(
-          registration.razorpay_order_id
-        );
-
-        if (
-          existingOrder.status === "created" &&
-          existingOrder.amount === AMOUNT &&
-          existingOrder.currency === "INR"
-        ) {
-          return res.json({
-            orderId: existingOrder.id,
-            amount: existingOrder.amount,
-            currency: existingOrder.currency,
-            keyId: process.env.RAZORPAY_KEY_ID,
-            registrationId,
-          });
-        }
-      } catch (error) {
-        console.error("Existing order lookup:", error.message);
-      }
-    }
-
-    const order = await razorpay.orders.create({
-      amount: AMOUNT,
-      currency: "INR",
-      receipt: `registration_${registrationId}_${Date.now()}`,
-      notes: {
-        registrationId: String(registrationId),
-        eventId: String(registration.event_id),
-      },
-    });
-
-    await db.execute(
-      `UPDATE registrations
-       SET payment_status = 'PENDING', razorpay_order_id = ?
-       WHERE id = ?`,
-      [order.id, registrationId]
-    );
-
-    res.json({
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      keyId: process.env.RAZORPAY_KEY_ID,
-      registrationId,
-    });
-  } catch (error) {
-    console.error("Create order:", error.message);
-    res.status(500).json({
-      message: "Unable to create payment order",
-    });
-  }
-});
-
-// Verify Razorpay payment
-app.post("/api/payment/verify", async (req, res) => {
-  try {
-    if (!razorpay || !process.env.RAZORPAY_KEY_SECRET) {
-      return res.status(503).json({
-        message: "Razorpay is not configured",
-      });
-    }
-
-    const {
-      registrationId,
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-    } = req.body;
-
-    const id = Number(registrationId);
-
-    if (
-      !Number.isSafeInteger(id) ||
-      id <= 0 ||
-      !razorpay_order_id ||
-      !razorpay_payment_id ||
-      !razorpay_signature
-    ) {
-      return res.status(400).json({
-        message: "Required payment details are missing",
-      });
-    }
-
-    const [rows] = await db.execute(
-      `SELECT id, payment_status, razorpay_order_id
-       FROM registrations
-       WHERE id = ?`,
-      [id]
     );
 
     if (rows.length === 0) {
@@ -445,11 +310,118 @@ app.post("/api/payment/verify", async (req, res) => {
     const registration = rows[0];
 
     if (registration.payment_status === "PAID") {
-      return res.json({
-        success: true,
-        message: "Payment was already verified",
+      return res.status(400).json({
+        message: "This registration has already been paid",
       });
     }
+
+    // Create a fresh order for this payment attempt.
+    const order = await razorpay.orders.create({
+      amount: 10000,
+      currency: "INR",
+      receipt: `reg_${registration.id}_${Date.now()}`,
+      notes: {
+        registrationId: String(registration.id),
+        studentEmail: registration.student_email,
+      },
+    });
+
+    await db.execute(
+      `UPDATE registrations
+       SET payment_status = 'PENDING',
+           razorpay_order_id = ?
+       WHERE id = ?`,
+      [order.id, registration.id]
+    );
+
+    console.log("Razorpay order created:", order.id);
+
+    res.json({
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID.trim(),
+      registrationId: registration.id,
+      studentName: registration.student_name,
+      studentEmail: registration.student_email,
+    });
+  } catch (error) {
+    // Detailed diagnostics appear in the backend terminal.
+    console.error("CREATE ORDER ERROR:", error);
+    console.error(
+      "RAZORPAY ERROR CODE:",
+      error.error?.code || "Not provided"
+    );
+    console.error(
+      "RAZORPAY ERROR DESCRIPTION:",
+      error.error?.description || error.message || "Unknown error"
+    );
+
+    const description =
+      error.error?.description || error.description || error.message || "";
+
+    if (
+      error.statusCode === 401 ||
+      error.error?.description === "Authentication failed"
+    ) {
+      return res.status(502).json({
+        message: "Razorpay authentication failed",
+        error:
+          "Check that the backend is using the matching Razorpay Key ID and Key Secret from the same mode.",
+      });
+    }
+
+    res.status(500).json({
+      message: "Unable to create payment order",
+      error: description || "Unknown error",
+    });
+  }
+});
+
+// ==================== VERIFY PAYMENT ====================
+
+app.post("/api/payment/verify", async (req, res) => {
+  try {
+    const {
+      registrationId,
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = req.body;
+
+    if (
+      !registrationId ||
+      !razorpay_order_id ||
+      !razorpay_payment_id ||
+      !razorpay_signature
+    ) {
+      return res.status(400).json({
+        message: "Missing payment verification details",
+      });
+    }
+
+    const secret = process.env.RAZORPAY_KEY_SECRET?.trim();
+
+    if (!secret || !razorpay) {
+      return res.status(500).json({
+        message: "Payment verification is not configured",
+      });
+    }
+
+    const [rows] = await db.execute(
+      `SELECT id, payment_status, razorpay_order_id
+       FROM registrations
+       WHERE id = ?`,
+      [registrationId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        message: "Registration not found",
+      });
+    }
+
+    const registration = rows[0];
 
     if (registration.razorpay_order_id !== razorpay_order_id) {
       return res.status(400).json({
@@ -457,13 +429,13 @@ app.post("/api/payment/verify", async (req, res) => {
       });
     }
 
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    const generatedSignature = crypto
+      .createHmac("sha256", secret)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
     const supplied = Buffer.from(razorpay_signature, "hex");
-    const expected = Buffer.from(expectedSignature, "hex");
+    const expected = Buffer.from(generatedSignature, "hex");
 
     if (
       supplied.length !== expected.length ||
@@ -474,78 +446,56 @@ app.post("/api/payment/verify", async (req, res) => {
       });
     }
 
+    // Confirm the payment with Razorpay.
     const payment = await razorpay.payments.fetch(
       razorpay_payment_id
     );
 
     if (
       payment.order_id !== razorpay_order_id ||
-      payment.status !== "captured" ||
-      payment.amount !== AMOUNT ||
-      payment.currency !== "INR"
+      payment.amount !== 10000 ||
+      payment.currency !== "INR" ||
+      payment.status !== "captured"
     ) {
       return res.status(400).json({
         message: "Payment is not captured or details do not match",
       });
     }
 
-    const [updateResult] = await db.execute(
+    await db.execute(
       `UPDATE registrations
        SET payment_status = 'PAID',
            razorpay_payment_id = ?
-       WHERE id = ?
-         AND razorpay_order_id = ?
-         AND payment_status <> 'PAID'`,
-      [razorpay_payment_id, id, razorpay_order_id]
+       WHERE id = ?`,
+      [razorpay_payment_id, registrationId]
     );
 
-    if (updateResult.affectedRows !== 1) {
-      return res.status(409).json({
-        message: "Could not update the registration payment status",
-      });
-    }
+    console.log(
+      "Payment verified for registration:",
+      registrationId
+    );
 
     res.json({
       success: true,
       message: "Payment verified successfully",
+      registrationId,
     });
   } catch (error) {
-    console.error("Verify payment:", error.message);
+    console.error("PAYMENT VERIFICATION ERROR:", error);
+
     res.status(500).json({
       message: "Unable to verify payment",
+      error: error.message || "Unknown error",
     });
   }
 });
 
-// Unknown API routes
-app.use("/api", (req, res) => {
-  res.status(404).json({
-    message: `API route not found: ${req.method} ${req.originalUrl}`,
-  });
-});
+// ==================== START SERVER ====================
 
-// Start server
 async function startServer() {
   try {
     await db.query("SELECT 1");
-    console.log("MySQL connected successfully");
 
-    app.listen(PORT, () => {
-      console.log(`Campus Club backend running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("MySQL connection failed:", error.message);
-    process.exit(1);
-  }
-}
-
-startServer();
-
-
-// Start server
-async function startServer() {
-  try {
-    await db.query("SELECT 1");
     console.log("MySQL connected successfully");
 
     app.listen(PORT, () => {

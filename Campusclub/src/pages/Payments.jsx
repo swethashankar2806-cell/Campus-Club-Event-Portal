@@ -145,7 +145,8 @@ export default function Payments() {
     } catch (error) {
       setLoading(false);
       setMessage(
-        error.response?.data?.message ||
+        error.response?.data?.error ||
+          error.response?.data?.message ||
           error.message ||
           "Unable to connect to the payment service."
       );
